@@ -7,7 +7,7 @@ set more off;
 set mem 400m;
 set matsize 500;
 version 9.0;
-sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
 
 *===========================================================================
 Description & Notes: 
@@ -15,13 +15,18 @@ Description & Notes:
 	 - Experimental Period: Most of the data is available for waves Oct 98 and Oct 99 
 *==========================================================================================================================;
 
-gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
+
+/*gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
 
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
 log using "$code/production_income_credit.log", replace;
 
-use $data/investments_data.dta;
+use "$data/investments_data.dta";
 
 *==============================
  Estimation Sample: keep hh with non-missing info on any of the dependent vars (draft animals, prod animals, land & micro-enterprise)
