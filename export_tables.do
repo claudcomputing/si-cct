@@ -51,10 +51,14 @@ Eligible and Ineligible Households*/
 
 /* program 3
 investments_long_term.do
+Creates: 
+	wave7.text 
+
 Table 2,
 Panels B and C
 Long-Term Impact of OPORTUNIDADES on Agricultural Assets (Nov 2003 data)
 */
+*I'm copying into the spreadsheet by hand;
 
 /* program 4
 production_income_credit.do

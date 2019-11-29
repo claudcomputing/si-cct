@@ -7,7 +7,7 @@ set more off;
 set mem 400m;
 set matsize 500;
 version 9.0;
-sysdir set PLUS "c:/Program Files/Stata8/ado/plus";
+*sysdir set PLUS "c:/Program Files/Stata8/ado/plus";
 
 *===========================================================================
 Description & Notes: 
@@ -17,13 +17,19 @@ Description & Notes:
 	- animals (and hence all animals dummies, values, etc.) and land ha have been trimmed at the top 1% of the distribution per wave
 *==========================================================================================================================;
 
+/*
 gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
 
+
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
 log using "$code/investments_long_term.log", replace;
 
-use $data/investments_data.dta;
+use "$data/investments_data.dta";
 
 *==============================
  Estimation Sample: keep hh with non-missing info on any of the dependent vars (draft animals, prod animals, land & micro-enterprise)
