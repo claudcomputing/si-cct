@@ -7,8 +7,8 @@ set more off;
 set mem 400m;
 set matsize 500;
 version 9.0;
-sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
-
+*sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PLUS "C:\Program Files (x86)\Stata15\ado\plus";
 *===========================================================================
 Description & Notes: 
 	- Impact of Oportunidades on Agricultural Assets and Micro-Enterprise Activities over Experimental Period: 
@@ -16,14 +16,21 @@ Description & Notes:
 	- work with value of animals rather than with nb of animals 
 	- animals (and hence all animals dummies, values, etc.) and land ha have been trimmed at the top 1% of the distribution per wave
 *==========================================================================================================================;
-
+/*
 gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
+*/
 
-log using "$code/investments.log", replace;
+/*
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
 
-use $data/investments_data.dta;
+cap log using "$code/investments.log", replace;
+
+use "$data/investments_data.dta";
 
 *==============================
  Estimation Sample: keep hh with non-missing info on any of the dependent vars (draft animals, prod animals, land & micro-enterprise)

@@ -1,6 +1,9 @@
 *export to excel;
 
 cd "$out_p"
+dir
+
+
 /*program 1
 investments_des.do
 Creates: 
@@ -10,12 +13,13 @@ Creates:
    7.2k  11/29/19 13:15  ineligibles.dta   
    7.2k  11/29/19 13:16  nonattriters.dta  
 
-Table 1 Summary Statistics for Eligible and Ineligible Households
+Table 1 
+Table A2 
+Table A5
 
-Table A2 Macro Income and Price Effects (Animal Prices and Community Wages)
-
-Table A5 Sample Sizes and Analysis of Attrition
-*/
+Summary Statistics for Eligible and Ineligible Households
+Macro Income and Price Effects (Animal Prices and Community Wages)
+Sample Sizes and Analysis of Attrition*/
 
 use eligibles, clear
        export excel using si-cct-MainTables, sheet("Table1-Baseline") sheetreplace
@@ -23,44 +27,59 @@ use aprices, clear
        export excel using si-cct-Appendices, sheet("TableA2-IncomePriceAnimal") sheetreplace
 use cwages, clear
        export excel using si-cct-Appendices, sheet("TableA2-IncomePriceWages") sheetreplace
+use nonattriters, clear
+       export excel using si-cct-Appendices, sheet("nonattriters") sheetreplace
 use ineligibles, clear
-       export excel using si-cct-Appendices, sheet("TableA5-SampleIneligibles") sheetreplace
-use ineligibles, clear
-       export excel using si-cct-Appendices, sheet("TableA5-SampleNonattriters") sheetreplace
-
-/*	   
-
-
-2
+       export excel using si-cct-Appendices, sheet("ineligibles") sheetreplace
+  
+	   
+/* program 2
 investments.do
+Creates:
+
+   2.0k  11/29/19 14:22  main.text
+   3.1k  11/29/19 14:22  time.text  
+
 Table 2, Panel A
-Table 3
-Table A6
+Table 3 
+Table A6 
+
 Impact of OPORTUNIDADES on Agricultural Assets and Micro-Enterprise Activities over Experimental Period
-Eligible and Ineligible Households
-3
+Eligible and Ineligible Households*/
+
+*I'm copying these into the spreadsheet by hand;
+
+/* program 3
 investments_long_term.do
 Table 2,
 Panels B and C
 Long-Term Impact of OPORTUNIDADES on Agricultural Assets (Nov 2003 data)
-4
+*/
+
+/* program 4
 production_income_credit.do
 Table 4
 Table 6
 Table A3
 Table A7
 OPORTUNIDADES Impact on Agricultural Production, Agricultural Income and Credit for Eligible and Ineligible Households
-5
+*/
+
+/* program 5
 consumption_income_long_term.do
 Table 5
 Table A4
 Table A8
 OPORTUNIDADES Impact on Long Term Consumption and Income Sources, including Sensitivity to Trimming Outliers (Nov 2003 data)
-6
+*/
+
+/* program 6
 adult_health_long_term.do
 Table 7
 OPORTUNIDADES Impact on Long Term Health of Prime Age Adults (Nov 2003 data)
-7
+*/
+
+/* program 7
 consumption.do
 Table 8
 Table 10
@@ -68,6 +87,10 @@ Table A9
 Table A10
 OPORTUNIDADES Impact on Consumption and MPC Over Experimental Period
 MPC and MIE Estimates, including Sensitivity to Trimming Outliers
+*/
+
+
+/*
 INTERVENTION TIMING AND DATA WAVES
 Wave 0
 October 1997
@@ -89,4 +112,4 @@ Wave 6
 November 2000
 Wave 7
 November 2003
-Long Term Effects
+Long Term Effects*/
