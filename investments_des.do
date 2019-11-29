@@ -5,20 +5,29 @@ cap clear matrix;
 set more off;
 set mem 400m;
 program drop _all;
-sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PLUS "c:/Program Files (x86)/Stata8/ado/plus";
 
 *=======================
 Description: Summary Stats for Eligible Households (Table 1) and Ineligible Households (Table A5) 
 			 Macro Income and Price Effects -- Animal Prices and Community Wages (Table A2)
 			 Sample Sizes & Analysis of Attrition (Section 3 "Experimental Design and Data")
 ===========================================================================================================================;
+/*
+Original directories
 gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
-gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/des/";
+gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/des/";*/
+
+/*
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
+
 
 log using "$code/investments_des.log", replace;
 
-u $data/investments_data.dta;
+u "$data/investments_data.dta";
 
 *======================================
  Create Wave & Edu Dummies
@@ -91,7 +100,7 @@ tab t1_c2_op if wave ==0;
  Covariates & Dependent Vars at Baseline (wave 0): Eligible Households (Table 1)
 *================================================================================;
 **Covariates;
-postfile eligibles str20 name obstret treat tstd obscont control cstd tstat using $out_p/eligibles.dta, replace;
+postfile eligibles str20 name obstret treat tstd obscont control cstd tstat using "$out_p/eligibles.dta", replace;
 	foreach var of global cont_d {;
 	gen str20 name="`var'" ;
 		foreach y in 0 1 {;
@@ -182,7 +191,7 @@ preserve;
 keep if ineligible ==1;
 
 **Covariates;
-postfile ineligibles str20 name obstret treat tstd obscont control cstd tstat using $out_p/ineligibles.dta, replace;
+postfile ineligibles str20 name obstret treat tstd obscont control cstd tstat using "$out_p/ineligibles.dta", replace;
 	foreach var of global cont_d {;
 	gen str20 name="`var'" ;
 		foreach y in 0 1 {;
@@ -279,7 +288,7 @@ keep if wave ==2;
 bys comuid wave: g counter_comu =_n;
 keep if counter_comu ==1; *one observation per community;
 
-postfile aprices str20 name obstret treat tstd obscont control cstd  tstat using $out_p/aprices.dta, replace;
+postfile aprices str20 name obstret treat tstd obscont control cstd  tstat using "$out_p/aprices.dta", replace;
 foreach var of global prices {;
 	gen str20 name="`var'" ;
 		foreach y in 0 1 {;
@@ -307,7 +316,7 @@ keep if wave >=2 & wave <=4;
 bys comuid wave: g counter_comu =_n;
 keep if counter_comu ==1; *one observation per community;
 
-postfile cwages str20 name obstret treat tstd obscont control cstd tstat using $out_p/cwages.dta, replace;
+postfile cwages str20 name obstret treat tstd obscont control cstd tstat using "$out_p/cwages.dta", replace;
 foreach var of global cwages {;
 	gen str20 name="`var'" ;
 		foreach y in 0 1 {;
@@ -362,7 +371,7 @@ reg pureat t1_c2_op if wave ==0, cl(comuid);
 keep if pureat ==0;
 
 **Covariates;
-postfile nonattriters str20 name obstret treat tstd obscont control cstd tstat using $out_p/nonattriters.dta, replace;
+postfile nonattriters str20 name obstret treat tstd obscont control cstd tstat using "$out_p/nonattriters.dta", replace;
 	foreach var of global cont_d {;
 	gen str20 name="`var'" ;
 		foreach y in 0 1 {;
