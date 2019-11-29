@@ -16,13 +16,18 @@ Description: Estimate impact of progresa on consumption and other sources of inc
 				Sensitivity to Trimming Consumption Outliers & Separate Food vs. Non-Food Expenditure (Table A4)
 *=========================*;
 
+/*
 gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
 
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
 log using 	"$code/consumption_income_long_term.log", replace;
 
-use $data/investments_data.dta;
+use "$data/investments_data.dta";
 
 *==============================
  Estimation Sample -- households with information on consumption in Nov 2003

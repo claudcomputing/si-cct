@@ -52,7 +52,7 @@ Eligible and Ineligible Households*/
 /* program 3
 investments_long_term.do
 Creates: 
-	wave7.text 
+	wave7.text
 
 Table 2,
 Panels B and C
@@ -62,6 +62,9 @@ Long-Term Impact of OPORTUNIDADES on Agricultural Assets (Nov 2003 data)
 
 /* program 4
 production_income_credit.do
+Creates:
+	supporting.text
+	
 Table 4
 Table 6
 Table A3
@@ -71,11 +74,14 @@ OPORTUNIDADES Impact on Agricultural Production, Agricultural Income and Credit 
 
 /* program 5
 consumption_income_long_term.do
+Creates:
+	consumo_w7.text
 Table 5
 Table A4
 Table A8
 OPORTUNIDADES Impact on Long Term Consumption and Income Sources, including Sensitivity to Trimming Outliers (Nov 2003 data)
 */
+*I'm copying into the spreadsheet by hand;
 
 /* program 6
 adult_health_long_term.do
