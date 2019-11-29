@@ -85,9 +85,12 @@ OPORTUNIDADES Impact on Long Term Consumption and Income Sources, including Sens
 
 /* program 6
 adult_health_long_term.do
+Creates:
+	adl_w7.text
 Table 7
 OPORTUNIDADES Impact on Long Term Health of Prime Age Adults (Nov 2003 data)
 */
+*I'm copying into the spreadsheet by hand;
 
 /* program 7
 consumption.do

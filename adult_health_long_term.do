@@ -7,19 +7,26 @@ set more off;
 set mem 400m;
 set matsize 800;
 
-sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
 
 *=========================*
 Description: Estimate Impact of Oportunidades on Long Term Health (Table 7)
 *=========================*;
 
-gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
+
+/*gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
 
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
+
+
 log using 	"$code/adult_health_long_term.log", replace;
 
-use $data/investments_data.dta;
+use "$data/investments_data.dta";
 
 *==============================
  Estimation Sample  -- households with information on consumption in Nov 2003 
@@ -41,7 +48,7 @@ save `investments';
 *==============================
  Merge Adult Morbidity Data
 ==============================;
-u $data/adults_morbidity_03.dta, clear;
+u "$data/adults_morbidity_03.dta", clear;
 sort state muni local folio wave;
 merge state muni local folio wave using `investments';
 keep if _merge ==3;
