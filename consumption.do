@@ -7,8 +7,8 @@ set more off;
 set mem 400m;
 set matsize 1500;
 
-sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
-sysdir set PERSONAL 	"c:/Program Files (x86)/Stata8/ado/personal";
+*sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PERSONAL 	"c:/Program Files (x86)/Stata8/ado/personal";
 
 *============================================================*
 Description: MPC, MIE on Consumption (Table 10) & First Stages (Table A10)
@@ -16,16 +16,21 @@ Description: MPC, MIE on Consumption (Table 10) & First Stages (Table A10)
 			 Sensitiviy of MPC and MIE to Trimming Outliers (Table A9)
 *=============================================================*;
 
+/*
 gl data		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl code		"C:/THESIS/OPORTUNIDADES/INVESTMENTS/CODE/vAEJApp/";
 gl out_p	"C:/THESIS/OPORTUNIDADES/INVESTMENTS/T/vAEJApp/";
 
+Claudia's directories*/
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta";
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct";
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output";
 log using "$code/consumption.log", replace;
 
 *===========================================
  Estimation Sample & Create New Vars
 ===========================================;
-use $data/investments_data.dta;
+use "$data/investments_data.dta";
 drop if consumo_pp_ae ==0; 
 
 ***Wave Dummies;
@@ -182,6 +187,7 @@ estimates clear;
 				Trim top & bottom 1% of consumption and monthly transfer distribution (Tables 10, A10)
 *============================*;
 *************************2SLS *****************************;
+#delimit;
 xi:  ivreg consumo_pp_ae2 
 	(witransfer_act_m_pp_ae2 cum314_act_pp_ae2 cum1526_act_pp_ae2 cum27p_act_pp_ae2 = 
 	transfer_hh3_m_pp_ae2 cum314_pot_pp_ae2 cum1526_pot_pp_ae2 cum27p_pot_pp_ae2)
@@ -196,10 +202,11 @@ xi:  ivreg consumo_pp_ae2
     scalar mpc1 =r(F);
     scalar pmpc1 =r(p);
     test _b[cum1526_act_pp_ae2] = _b[cum27p_act_pp_ae2];
+	#delimit;
     outreg using "$out_p/consumo_pp_ae2.txt", 
-    se bdec(3) ctitle(LS) coefastr 10pct 
+    se bdec(3) ctitle(LS) /*coefastr 10pct
     addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1 , 
-		   "Cum 1526 =27p", r(F), "Prob Cum 1526 =27p", r(p)) adec(3) replace;
+		   "Cum 1526 =27p", r(F), "Prob Cum 1526 =27p", r(p)) adec(3)*/  replace;
 
 xi:  ivreg consumo_pp_ae2 
 	(witransfer_act_m_pp_ae2 cum314_act_pp_ae2 cum15p_act_pp_ae2 = 
@@ -215,8 +222,8 @@ xi:  ivreg consumo_pp_ae2
     scalar mpc1 =r(F);
     scalar pmpc1 =r(p);
     outreg using "$out_p/consumo_pp_ae2.txt", 
-    se bdec(3) ctitle(LS) coefastr 10pct 
-    addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1) adec(3) append;
+    se bdec(3) ctitle(LS) /*coefastr 10pct
+    addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1) adec(3)*/ append;
 
 *************************OLS *****************************;
 xi: reg consumo_pp_ae2 
@@ -233,9 +240,9 @@ xi: reg consumo_pp_ae2
     scalar pmpc1 =r(p);
 	test _b[cum1526_act_pp_ae2] = _b[cum27p_act_pp_ae2];
 	outreg using "$out_p/consumo_pp_ae2.txt", 
-	se bdec(3) ctitle(OLS) coefastr 10pct 
+	se bdec(3) ctitle(OLS) /*coefastr 10pct
 	addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1 , 
-	"Cum 1526 =27p", r(F), "Prob Cum 1526 =27p", r(p)) adec(3) append;
+	"Cum 1526 =27p", r(F), "Prob Cum 1526 =27p", r(p)) adec(3)*/ append;
 
 xi: reg consumo_pp_ae2 
 	witransfer_act_m_pp_ae2 cum314_act_pp_ae2 cum15p_act_pp_ae2 
@@ -250,8 +257,8 @@ xi: reg consumo_pp_ae2
     scalar mpc1 =r(F);
     scalar pmpc1 =r(p);
     outreg using "$out_p/consumo_pp_ae2.txt", 
-    se bdec(3) ctitle(LS) coefastr 10pct 
-    addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1) adec(3) append;
+    se bdec(3) ctitle(LS) /*coefastr 10pct
+    addstat( "Mean Dep Var:", avg , "Mean Transfer:", avgt , "MPC =1 F(1):", mpc1, "Prob MPC =1:", pmpc1) adec(3)*/ append;
 
 log close;
 

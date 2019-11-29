@@ -7,11 +7,11 @@ dir
 /*program 1
 investments_des.do
 Creates: 
-   5.9k  11/29/19 13:15  aprices.dta       
-   5.7k  11/29/19 13:15  cwages.dta        
-   7.2k  11/29/19 13:15  eligibles.dta     
-   7.2k  11/29/19 13:15  ineligibles.dta   
-   7.2k  11/29/19 13:16  nonattriters.dta  
+	aprices.dta       
+	cwages.dta        
+	eligibles.dta     
+	ineligibles.dta   
+	nonattriters.dta  
 
 Table 1 
 Table A2 
@@ -36,9 +36,8 @@ use ineligibles, clear
 /* program 2
 investments.do
 Creates:
-
-   2.0k  11/29/19 14:22  main.text
-   3.1k  11/29/19 14:22  time.text  
+	main.text
+	time.text  
 
 Table 2, Panel A
 Table 3 
@@ -94,6 +93,9 @@ OPORTUNIDADES Impact on Long Term Health of Prime Age Adults (Nov 2003 data)
 
 /* program 7
 consumption.do
+Creates:
+	consumo_app.txt
+	consumo_pp_ae2.txt
 Table 8
 Table 10
 Table A9
@@ -101,28 +103,4 @@ Table A10
 OPORTUNIDADES Impact on Consumption and MPC Over Experimental Period
 MPC and MIE Estimates, including Sensitivity to Trimming Outliers
 */
-
-
-/*
-INTERVENTION TIMING AND DATA WAVES
-Wave 0
-October 1997
-Baseline
-Wave 2
-October 1998
-Experimental Variation
-Treatment households start receiving benefits in March/April 1998
-Wave 3
-May 1999
-Experimental Variation
-Wave 4
-November 1999
-Experimental Variation
-Control households start receiving benefits in November/December 1999
-Wave 5
-May 2000
-Wave 6
-November 2000
-Wave 7
-November 2003
-Long Term Effects*/
+*I'm copying into the spreadsheet by hand;

@@ -1,0 +1,2323 @@
+-----------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct/consumption_income_long_t
+> erm.log
+  log type:  text
+ opened on:  29 Nov 2019, 15:44:07
+
+. use "$data/investments_data.dta";
+(Complete Investments Data Base)
+
+. *==============================
+>  Estimation Sample -- households with information on consumption in Nov 2003
+> *==============================;
+. keep if wave == 7;
+(136,857 observations deleted)
+
+. drop if consumo_pp_ae ==0 | consumo_pp_ae ==.;
+(291 observations deleted)
+
+. *================================================================*
+>  Private & Public Transfers & Out of the Hh Earnings - PP AE & Compare Values/Trimming
+> *=================================================================*;
+. gl public       solidaridad INI probecat empleotemp procampo liconsa DIF tortilla progbecas progpapilla progmonetario
+>                         amount_solidaridad amount_INI amount_probecat amount_empleotemp amount_procampo;
+
+. sum $public;
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ solidaridad |          0
+         INI |          0
+    probecat |          0
+  empleotemp |     19,822    .0064575    .0801005          0          1
+    procampo |     19,830    .3292486    .4699522          0          1
+-------------+---------------------------------------------------------
+     liconsa |     19,833    .0152776    .1226577          0          1
+         DIF |     19,832     .086073    .2804789          0          1
+    tortilla |     19,836    .0009579    .0309352          0          1
+   progbecas |          0
+ progpapilla |          0
+-------------+---------------------------------------------------------
+progmoneta~o |     19,839    .7176773    .4501409          0          1
+amount_sol~d |          0
+  amount_INI |          0
+amount_pro~t |          0
+amount_emp~p |     19,804    1.842095    44.43933          0   3709.103
+-------------+---------------------------------------------------------
+amount_pro~o |     19,341     64.1147    972.0523          0   92772.59
+
+. des $public;
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------
+solidaridad     byte    %8.0g      p40b1      (hh) =1 if hh receives solidaridad support
+INI             byte    %8.0g      p40c1      (hh) =1 if hh receives INI support (anti-poverty program for indigenous)
+probecat        byte    %8.0g      p40d1      (hh) =1 if hh receives probecat support
+empleotemp      byte    %8.0g      p40e1      (hh) =1 if hh receives empleo temporal support
+procampo        byte    %9.0g                 (hh) =1 if hh receives procampo support (agricultural subsidies)
+liconsa         byte    %8.0g      p41b1      (hh) =1 if hh receives liconsao support
+DIF             byte    %8.0g      p40a1      (hh) =1 if hh receives DIF support (despensas -- package of basic food
+                                                products)
+tortilla        byte    %8.0g      p41a1      (hh) =1 if hh receives tortilla support
+progbecas       byte    %9.0g                 (hh) =1 if hh receives becas progresa
+progpapilla     byte    %9.0g                 (hh) =1 if hh receives papilla progresa
+progmonetario   byte    %9.0g                 (hh) =1 if hh receives nutritional stipend progresa
+amount_solida~d double  %9.0g                 (hh) Monthly amount solidaridad support (deflated)
+amount_INI      double  %9.0g                 (hh) Monthly amount INI support (deflated)
+amount_probecat double  %9.0g                 (hh) Monthly amount probecat support (deflated)
+amount_empleo~p double  %9.0g                 (hh) Monthly amount empleotemp support (deflated)
+amount_procampo double  %9.0g                 (hh) Monthly amount procampo support (deflated)
+
+. **Procampo and progmonetario (progresa) are the most common public subsidies hh receives -- consider amount_procampo;
+. ren amount_procampo     amount_p;
+
+.                         *public transfers;
+. ren amount_t                    amount_t_pr;
+
+.                 *private transfers;
+. ren nonfood nonfoodexp;
+
+. foreach x in foodexp nonfoodexp {;
+  2.         drop `x'_pp `x'_pp_ae;
+  3. };
+
+. foreach x in amount_p amount_t_pr amount_borrowed_m outwage_lw_hh foodexp nonfoodexp {;
+  2.         g `x'_pp_ae = `x'/hhsize_ae;
+  3.         g `x'_pp_ae2 = `x'/hhsize_ae2;
+  4. };
+(1,482 missing values generated)
+(1,482 missing values generated)
+(951 missing values generated)
+(951 missing values generated)
+(890 missing values generated)
+(890 missing values generated)
+(2,217 missing values generated)
+(2,217 missing values generated)
+
+. egen amount_t_pb                        =rsum(amount_p witransfer_act_m);
+
+. replace amount_t_pb                     =. if amount_p ==. & witransfer_act_m ==.;
+(200 real changes made, 200 to missing)
+
+. egen amount_t_pb_pp_ae          =rsum(amount_p_pp_ae witransfer_act_m_pp_ae);
+
+. replace amount_t_pb_pp_ae       =. if amount_p_pp_ae ==. & witransfer_act_m_pp_ae ==.;
+(200 real changes made, 200 to missing)
+
+. egen amount_t_pb_pp_ae2         =rsum(amount_p_pp_ae2 witransfer_act_m_pp_ae2);
+
+. replace amount_t_pb_pp_ae2      =. if amount_p_pp_ae2 ==. & witransfer_act_m_pp_ae2 ==.;
+(200 real changes made, 200 to missing)
+
+.  ** Dummies for Proportions;
+. foreach x in consumo homeprod foodexp nonfoodexp witransfer_act_m amount_p amount_t_pb amount_t_pr amount_borrowed_m outwag
+> e_lw_hh
+> consumo_pp_ae homeprod_pp_ae foodexp_pp_ae nonfoodexp_pp_ae witransfer_act_m_pp_ae amount_p_pp_ae amount_t_pb_pp_ae amount_
+> t_pr_pp_ae 
+> amount_borrowed_m_pp_ae outwage_lw_hh_pp_ae
+> consumo_pp_ae2 homeprod_pp_ae2 foodexp_pp_ae2 nonfoodexp_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_pb_pp_ae2 
+> amount_t_pr_pp_ae2 
+> amount_borrowed_m_pp_ae2 outwage_lw_hh_pp_ae2 {;
+  2.         g d`x' =(`x'>0);
+  3. };
+
+. *============================*
+>  Trim Outliers
+> *============================*;
+. sum amount_p amount_t_pr amount_borrowed_m outwage_lw_hh amount_p_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_p
+> b_pp_ae2 
+> amount_t_pr_pp_ae2 outwage_lw_hh_pp_ae2 amount_borrowed_m_pp_ae2 consumo_pp_ae2 foodexp nonfoodexp foodexp_pp_ae2 nonfoodex
+> p_pp_ae2 
+> if t2_c1_op~=., d;
+
+       (hh) Monthly amount procampo support (deflated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               9,858
+25%            0              0       Sum of Wgt.       9,858
+
+50%            0                      Mean           55.65801
+                        Largest       Std. Dev.      1075.038
+75%      40.0119       21606.42
+90%     90.02677        25207.5       Variance        1155707
+95%     142.5424       27008.03       Skewness       69.63105
+99%      390.116       92772.59       Kurtosis       5709.872
+
+        (hh) Total monthly amount received by hh from
+               migrants or friends (deflated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,092
+25%            0              0       Sum of Wgt.      10,092
+
+50%            0                      Mean           21.81441
+                        Largest       Std. Dev.      81.00085
+75%            0       984.6155
+90%     50.75338       994.7662       Variance       6561.138
+95%     126.8834       994.7662       Skewness       5.318407
+99%     497.3831       1020.143       Kurtosis       36.41679
+
+       Monthly Amount Borrowed Deflated (borrowed over
+              last 12 mths -- both active & fu
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,070
+25%            0              0       Sum of Wgt.      10,070
+
+50%            0                      Mean           15.21801
+                        Largest       Std. Dev.      105.5583
+75%            0       2537.669
+90%     10.15068       3552.736       Variance       11142.55
+95%     60.90405       3552.736       Skewness       22.57731
+99%     329.8969       4973.831       Kurtosis       798.8026
+
+     (hh) Monthly Wage from work in outside hh activity
+                 during last week (deflated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               9,428
+25%            0              0       Sum of Wgt.       9,428
+
+50%     681.4026                      Mean           1065.761
+                        Largest       Std. Dev.      3729.517
+75%     1300.387       109268.9
+90%     2340.696       132470.4       Variance       1.39e+07
+95%     3120.928       160756.4       Skewness       30.42033
+99%     6501.933       175448.2       Kurtosis       1174.544
+
+                       amount_p_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               9,858
+25%            0              0       Sum of Wgt.       9,858
+
+50%            0                      Mean           13.14853
+                        Largest       Std. Dev.       291.916
+75%     7.081752        4180.81
+90%     20.00595       4711.401       Variance       85214.95
+95%     32.06081       5123.475       Skewness       80.34398
+99%      95.2519       26812.89       Kurtosis       7234.042
+
+           Actual Transfer - monthly PPAE (DiMaro)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%     10.83989              0       Obs              10,414
+25%     26.20657              0       Sum of Wgt.      10,414
+
+50%     43.59727                      Mean             51.695
+                        Largest       Std. Dev.      41.49997
+75%     69.15729       424.0025
+90%     98.71634       491.5764       Variance       1722.248
+95%     123.8651        503.549       Skewness       2.445173
+99%     193.7883       649.9241       Kurtosis       17.71808
+
+                       amount_p_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               9,858
+25%            0              0       Sum of Wgt.       9,858
+
+50%            0                      Mean           13.14853
+                        Largest       Std. Dev.       291.916
+75%     7.081752        4180.81
+90%     20.00595       4711.401       Variance       85214.95
+95%     32.06081       5123.475       Skewness       80.34398
+99%      95.2519       26812.89       Kurtosis       7234.042
+
+                     amount_t_pb_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%     15.14731              0       Obs              10,414
+25%     28.36475              0       Sum of Wgt.      10,414
+
+50%     46.98993                      Mean           64.14154
+                        Largest       Std. Dev.      288.2988
+75%     77.12783       4234.964
+90%     110.7623       4716.642       Variance        83116.2
+95%     141.6071       5218.009       Skewness       80.14252
+99%     237.8058       27000.82       Kurtosis       7345.669
+
+                     amount_t_pr_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,092
+25%            0              0       Sum of Wgt.      10,092
+
+50%            0                      Mean           6.166622
+                        Largest       Std. Dev.      26.29208
+75%            0       497.3831
+90%     11.73488       497.3831       Variance       691.2737
+95%     32.79701       497.3831       Skewness       8.129972
+99%     126.8834       497.3831       Kurtosis       98.63375
+
+                    outwage_lw_hh_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs               9,428
+25%            0              0       Sum of Wgt.       9,428
+
+50%     139.0005                      Mean           219.8474
+                        Largest       Std. Dev.      625.7688
+75%     279.1437       19669.08
+90%     468.1392       20297.53       Variance       391586.5
+95%     637.3577       20763.38       Skewness       23.38202
+99%     1310.164        26078.5       Kurtosis       737.0471
+
+                  amount_borrowed_m_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,070
+25%            0              0       Sum of Wgt.      10,070
+
+50%            0                      Mean           3.277272
+                        Largest       Std. Dev.        22.575
+75%            0       536.5051
+90%     2.063145       549.9592       Variance       509.6306
+95%     13.47435       840.1741       Skewness        18.8998
+99%     73.34303       847.9084       Kurtosis       529.2096
+
+             Consumption - monthly PPAE (DiMaro)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     31.34734       .4772817
+ 5%     58.78982       2.321737
+10%     75.69051       5.306687       Obs              10,414
+25%     113.4545        5.79399       Sum of Wgt.      10,414
+
+50%     171.1318                      Mean           211.3988
+                        Largest       Std. Dev.      198.2381
+75%     254.4672       3224.009
+90%     365.6441       3487.435       Variance       39298.34
+95%     471.0854       4089.742       Skewness       10.65133
+99%     825.9859       7968.342       Kurtosis       281.3149
+
+                      Food expenditures
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     124.1504              0
+10%     175.8798              0       Obs              10,414
+25%     279.3385              0       Sum of Wgt.      10,414
+
+50%     426.7671                      Mean           533.9393
+                        Largest       Std. Dev.      704.0939
+75%     628.5116       13674.65
+90%     878.1057        14085.9       Variance       495748.2
+95%     1095.369       14329.03       Skewness       11.38919
+99%      2115.73        16475.8       Kurtosis        175.517
+
+                    Non-Food expenditures
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     6.056705              0
+ 5%     34.21017              0
+10%     57.01696              0       Obs              10,414
+25%      117.749              0       Sum of Wgt.      10,414
+
+50%     232.9399                      Mean           338.9211
+                        Largest       Std. Dev.      346.8007
+75%     438.5696       3227.631
+90%     742.6486       3253.116       Variance       120270.7
+95%     1005.642       3415.623       Skewness       2.725149
+99%     1690.616       4080.458       Kurtosis       14.83089
+
+                       foodexp_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     27.61492              0
+10%     39.60309              0       Obs              10,414
+25%     61.10884              0       Sum of Wgt.      10,414
+
+50%     95.18599                      Mean           125.7729
+                        Largest       Std. Dev.      227.1235
+75%     141.9779       5729.025
+90%     205.0735        5794.98       Variance       51585.07
+95%       260.19        6750.68       Skewness        18.1098
+99%     554.4923       9104.365       Kurtosis       478.0616
+
+                      nonfoodexp_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%      2.02763              0
+ 5%      9.27247              0
+10%     14.33813              0       Obs              10,414
+25%     26.75799              0       Sum of Wgt.      10,414
+
+50%     50.39221                      Mean           75.76732
+                        Largest       Std. Dev.      87.40511
+75%     93.85594       1357.454
+90%     162.9501       1480.582       Variance       7639.653
+95%      222.066       1555.965       Skewness       5.141206
+99%       403.38       1635.335       Kurtosis       56.39658
+
+. foreach x in consumo consumo_pp_ae consumo_pp_ae2 
+> homeprod homeprod_pp_ae homeprod_pp_ae2 foodexp foodexp_pp_ae foodexp_pp_ae2 nonfoodexp nonfoodexp_pp_ae nonfoodexp_pp_ae2 
+>  
+> witransfer_act_m witransfer_act_m_pp_ae witransfer_act_m_pp_ae2 amount_p amount_p_pp_ae amount_p_pp_ae2 
+> amount_t_pb amount_t_pb_pp_ae amount_t_pb_pp_ae2 amount_t_pr amount_t_pr_pp_ae amount_t_pr_pp_ae2 
+> amount_borrowed_m amount_borrowed_m_pp_ae amount_borrowed_m_pp_ae2 outwage_lw_hh outwage_lw_hh_pp_ae outwage_lw_hh_pp_ae2 {
+> ;
+  2.         xtile `x'_tl_t2 = `x' if t2_c1_op ~=., nq(200);
+  3.         xtile `x'_tl_tr = `x' if treatcom ~=. & ineligible ==1, nq(200);
+  4. };
+
+. *=================*
+>  Final Globals - final set of controls
+> *=================*;
+. gl basic                nbani197 nbani297 ha97;
+
+. gl controls             no497 big497
+>                                 age_hh age_hh2 female_hh educ1_hh ethnicity_hh 
+>                                 age_sp age_sp2 educ1_sp                         
+>                                 dage0_7_97 dage8_17_97 dage18_54_97 dage55p 
+>                                 homeown97 dirtfloor97 electricity97  
+>                                 org_faenas min_dist lnup_cwagepm up2_mcwagepm
+>                                 dummy_age_hh dummy_educ_hh dummy_ethnicity_hh dummy_age_sp dummy_educ_sp
+>                                 dummy_dage0_7_97 dummy_dirtfloor97 dummy_electricity97;
+
+.                         *======================================================
+>  ITT results: wave 7 - Eligibles -- Consumption & Other Income Sources (Table 5)
+>                 Trim top & bottom 1% consumption distribution, top 2% of distrib of other vars (5% for wages).
+> *=======================================================;
+. foreach x in consumo_pp_ae2 foodexp_pp_ae2 nonfoodexp_pp_ae2 {;
+  2.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 >2 & consumo_pp_ae2_tl_t2 <199, cl(comui
+> d);
+  3.         sum `x' if e(sample) & t2_c1_op ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,166
+                                                F(33, 499)        =      19.08
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1240
+                                                Root MSE          =     115.48
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   10.83634   4.832307     2.24   0.025     1.342163    20.33051
+           nbani197 |   .2379948   1.698291     0.14   0.889    -3.098687    3.574677
+           nbani297 |   3.438168   .9896848     3.47   0.001     1.493705    5.382631
+               ha97 |  -.2730041   .8025509    -0.34   0.734    -1.849799    1.303791
+      hhsize_ae2_97 |  -6.179905   .9165484    -6.74   0.000    -7.980674   -4.379135
+              no497 |   1.085243   4.512022     0.24   0.810    -7.779659    9.950144
+             big497 |    6.95862   4.825458     1.44   0.150      -2.5221    16.43934
+             age_hh |   .7025292     .57342     1.23   0.221    -.4240859    1.829144
+            age_hh2 |  -.0099408   .0052795    -1.88   0.060    -.0203137     .000432
+          female_hh |   28.17649   6.146205     4.58   0.000     16.10086    40.25212
+           educ1_hh |  -14.04889   3.734194    -3.76   0.000    -21.38557   -6.712208
+       ethnicity_hh |   -29.6915   5.127286    -5.79   0.000    -39.76523   -19.61777
+             age_sp |   .7487252   .4031718     1.86   0.064    -.0433983    1.540849
+            age_sp2 |  -.0008526   .0036046    -0.24   0.813    -.0079347    .0062295
+           educ1_sp |  -20.88502   3.378223    -6.18   0.000    -27.52232   -14.24773
+         dage0_7_97 |  -20.87082   3.741907    -5.58   0.000    -28.22265   -13.51899
+        dage8_17_97 |    16.3706   3.053788     5.36   0.000     10.37074    22.37047
+       dage18_54_97 |  -3.219529   7.712168    -0.42   0.677    -18.37185    11.93279
+         dage55p_97 |  -2.937272   3.384102    -0.87   0.386    -9.586116    3.711573
+          homeown97 |   1.286654   4.952931     0.26   0.795    -8.444516    11.01782
+        dirtfloor97 |  -30.54875    4.11342    -7.43   0.000     -38.6305   -22.46699
+      electricity97 |   15.02415   4.543082     3.31   0.001     6.098227    23.95008
+         org_faenas |   7.758002   6.175353     1.26   0.210    -4.374895     19.8909
+           min_dist |  -.2556581   .0605242    -4.22   0.000    -.3745717   -.1367445
+       lnup_cwagepm |   2.969595   .8421861     3.53   0.000     1.314927    4.624263
+       up2_mcwagepm |   -21.6765   10.09914    -2.15   0.032    -41.51859   -1.834421
+       dummy_age_hh |     41.261   28.61554     1.44   0.150     -14.9608     97.4828
+      dummy_educ_hh |  -26.76971   17.26064    -1.55   0.122    -60.68221    7.142777
+ dummy_ethnicity_hh |   94.44654   36.10854     2.62   0.009     23.50303      165.39
+       dummy_age_sp |   17.97877   27.60907     0.65   0.515    -36.26558    72.22312
+      dummy_educ_sp |  -6.937665   27.01907    -0.26   0.797    -60.02283    46.14751
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -23.93444   26.76296    -0.89   0.372    -76.51642    28.64754
+dummy_electricity97 |   168.1055   33.10655     5.08   0.000     103.0601     233.151
+              _cons |    245.582   19.07488    12.87   0.000     208.1051     283.059
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,860    193.7149    118.3447   31.50829   825.9859
+
+added scalar:
+               e(mean) =  193.71492
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,860    193.7149    118.3447   31.50829   825.9859
+
+added scalar:
+             e(mean_p) =  193.71492
+
+added scalar:
+                 e(sd) =  118.34466
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,166           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,166
+                                                F(33, 499)        =       8.73
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0281
+                                                Root MSE          =     157.41
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     foodexp_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   7.947446   4.458956     1.78   0.075    -.8131953    16.70809
+           nbani197 |  -.3231093   1.317126    -0.25   0.806    -2.910906    2.264687
+           nbani297 |  -.5407342   .6639092    -0.81   0.416    -1.845136    .7636678
+               ha97 |  -1.410952   .7208822    -1.96   0.051     -2.82729    .0053866
+      hhsize_ae2_97 |  -5.489123   1.190141    -4.61   0.000    -7.827428   -3.150818
+              no497 |   6.339326   9.242837     0.69   0.493    -11.82035      24.499
+             big497 |   11.24703   5.400444     2.08   0.038     .6366203    21.85744
+             age_hh |   .6913893   .5541651     1.25   0.213    -.3973951    1.780174
+            age_hh2 |  -.0096588   .0053272    -1.81   0.070    -.0201252    .0008077
+          female_hh |   16.35356   8.576669     1.91   0.057    -.4972712     33.2044
+           educ1_hh |   6.824994   4.675322     1.46   0.145    -2.360748    16.01074
+       ethnicity_hh |   -12.8917   4.174488    -3.09   0.002    -21.09344   -4.689965
+             age_sp |  -.4854869   .5840853    -0.83   0.406    -1.633057    .6620827
+            age_sp2 |   .0089448   .0057323     1.56   0.119    -.0023175    .0202071
+           educ1_sp |  -13.73828   4.535541    -3.03   0.003    -22.64939   -4.827164
+         dage0_7_97 |  -12.98028   4.625471    -2.81   0.005    -22.06807   -3.892478
+        dage8_17_97 |   4.537423   4.427206     1.02   0.306    -4.160839    13.23568
+       dage18_54_97 |  -27.00601   17.71032    -1.52   0.128      -61.802    7.789987
+         dage55p_97 |  -1.777448   3.843118    -0.46   0.644    -9.328135    5.773239
+          homeown97 |  -4.525045   6.569649    -0.69   0.491    -17.43263    8.382537
+        dirtfloor97 |  -11.91086   3.756114    -3.17   0.002    -19.29061   -4.531112
+      electricity97 |   5.267682   4.078028     1.29   0.197     -2.74454     13.2799
+         org_faenas |   9.496031    5.86019     1.62   0.106    -2.017657    21.00972
+           min_dist |   .0365394   .0511852     0.71   0.476    -.0640257    .1371044
+       lnup_cwagepm |   1.799441   .7685492     2.34   0.020     .2894498    3.309432
+       up2_mcwagepm |  -20.37747   5.828702    -3.50   0.001    -31.82929   -8.925649
+       dummy_age_hh |   4.789707   21.14942     0.23   0.821    -36.76317    46.34258
+      dummy_educ_hh |  -5.866225   11.66195    -0.50   0.615    -28.77879    17.04634
+ dummy_ethnicity_hh |   59.76584   23.80631     2.51   0.012     12.99288    106.5388
+       dummy_age_sp |   19.88685   27.43884     0.72   0.469    -34.02305    73.79674
+      dummy_educ_sp |   -12.4975   26.79173    -0.47   0.641    -65.13599      40.141
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   61.22994   85.84865     0.71   0.476    -107.4394    229.8993
+dummy_electricity97 |   113.9403   53.50948     2.13   0.034     8.808683     219.072
+              _cons |   167.0404   22.54928     7.41   0.000     122.7371    211.3436
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+foodexp_p~e2 |      3,860    114.7123    155.6196          0   4761.791
+
+added scalar:
+               e(mean) =  114.71229
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+foodexp_p~e2 |      3,826    115.7317    155.9317    3.15719   4761.791
+
+added scalar:
+             e(mean_p) =  115.73169
+
+added scalar:
+                 e(sd) =  155.93173
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dfoodexp_p~2 |     10,166    .9918355    .0899923          0          1
+
+added scalar:
+               e(prop) =  .99183553
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,166
+                                                F(33, 499)        =      16.38
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1263
+                                                Root MSE          =     66.809
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+  nonfoodexp_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |    2.37288   2.543027     0.93   0.351     -2.62348    7.369241
+           nbani197 |  -.7964118     1.0337    -0.77   0.441    -2.827353     1.23453
+           nbani297 |   2.017869    .625744     3.22   0.001      .788451    3.247286
+               ha97 |   .2250865   .5206715     0.43   0.666     -.797892    1.248065
+      hhsize_ae2_97 |  -1.818542   .4967108    -3.66   0.000    -2.794444   -.8426395
+              no497 |  -1.594027   2.286899    -0.70   0.486    -6.087164    2.899111
+             big497 |   2.153856   3.003587     0.72   0.474    -3.747379    8.055091
+             age_hh |  -.2211455   .4352684    -0.51   0.612     -1.07633    .6340392
+            age_hh2 |   .0003687   .0041209     0.09   0.929    -.0077276    .0084651
+          female_hh |   13.29374   3.810563     3.49   0.001     5.807017    20.78047
+           educ1_hh |  -13.31954   2.038696    -6.53   0.000    -17.32503   -9.314057
+       ethnicity_hh |  -13.66503   2.909827    -4.70   0.000    -19.38205   -7.948004
+             age_sp |   .5270092   .2183833     2.41   0.016     .0979452    .9560732
+            age_sp2 |  -.0019787   .0019124    -1.03   0.301    -.0057361    .0017787
+           educ1_sp |  -13.00933   2.122379    -6.13   0.000    -17.17923   -8.839425
+         dage0_7_97 |  -6.375005   2.134726    -2.99   0.003    -10.56916   -2.180846
+        dage8_17_97 |   13.12466   1.842842     7.12   0.000     9.503978    16.74535
+       dage18_54_97 |   1.755054   4.042763     0.43   0.664    -6.187881    9.697988
+         dage55p_97 |  -3.691479   1.892773    -1.95   0.052    -7.410265    .0273068
+          homeown97 |  -.1386198   2.789892    -0.05   0.960    -5.620002    5.342763
+        dirtfloor97 |  -18.64241   2.319905    -8.04   0.000    -23.20039   -14.08442
+      electricity97 |   13.86999    2.34532     5.91   0.000     9.262069    18.47791
+         org_faenas |   6.153134   3.212942     1.92   0.056    -.1594281     12.4657
+           min_dist |  -.2181254   .0331197    -6.59   0.000    -.2831967   -.1530541
+       lnup_cwagepm |   1.240974   .4338014     2.86   0.004     .3886714    2.093276
+       up2_mcwagepm |  -5.665885   5.675327    -1.00   0.319    -16.81637    5.484597
+       dummy_age_hh |    18.4477   18.05508     1.02   0.307    -17.02565    53.92105
+      dummy_educ_hh |  -23.19524   11.49654    -2.02   0.044    -45.78282   -.6076545
+ dummy_ethnicity_hh |   47.32684   24.20106     1.96   0.051    -.2217016    94.87537
+       dummy_age_sp |    12.8649   14.25589     0.90   0.367    -15.14407    40.87386
+      dummy_educ_sp |  -11.36588   13.87036    -0.82   0.413    -38.61738    15.88562
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -13.57038   14.07585    -0.96   0.335    -41.22561    14.08486
+dummy_electricity97 |   43.76108   30.95089     1.41   0.158    -17.04904    104.5712
+              _cons |   107.1732   11.61942     9.22   0.000     84.34418    130.0022
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+nonfoodex~e2 |      3,860    71.88938    69.17518          0   690.5621
+
+added scalar:
+               e(mean) =  71.88938
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+nonfoodex~e2 |      3,836    72.33916    69.15639   .1761694   690.5621
+
+added scalar:
+             e(mean_p) =  72.339157
+
+added scalar:
+                 e(sd) =  69.156393
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dnonfoodex~2 |     10,166    .9929176    .0838628          0          1
+
+added scalar:
+               e(prop) =  .99291757
+
+. foreach x in homeprod_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_pb_pp_ae2 amount_t_pr_pp_ae2 amount_borrowed_
+> m_pp_ae2 {;
+  2.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 >2 & consumo_pp_ae2_tl_t2 <199 & `x'_tl_
+> t2 <=196, cl(comuid);
+  3.         sum `x' if e(sample) & t2_c1_op ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,984
+                                                F(33, 499)        =       5.44
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0302
+                                                Root MSE          =     21.081
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+    homeprod_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   2.038004   1.091432     1.87   0.062    -.1063651    4.182373
+           nbani197 |   1.020898   .4012243     2.54   0.011     .2326013    1.809195
+           nbani297 |   .7968693   .1559326     5.11   0.000      .490504    1.103235
+               ha97 |   .1939307   .1464511     1.32   0.186    -.0938061    .4816675
+      hhsize_ae2_97 |   -.137472   .1591408    -0.86   0.388    -.4501405    .1751965
+              no497 |  -1.297901   1.099215    -1.18   0.238    -3.457562    .8617596
+             big497 |   .0526619   .9379606     0.06   0.955    -1.790177    1.895501
+             age_hh |   .2244444   .0700243     3.21   0.001     .0868656    .3620231
+            age_hh2 |  -.0018474   .0006465    -2.86   0.004    -.0031176   -.0005772
+          female_hh |    1.07392   1.105625     0.97   0.332    -1.098334    3.246175
+           educ1_hh |   1.547777   .6238834     2.48   0.013     .3220149    2.773539
+       ethnicity_hh |  -2.600063   1.215071    -2.14   0.033    -4.987349    -.212776
+             age_sp |   .0022778   .0577541     0.04   0.969    -.1111934     .115749
+            age_sp2 |   .0001651   .0005029     0.33   0.743    -.0008229    .0011532
+           educ1_sp |  -.7020182   .7100979    -0.99   0.323    -2.097168    .6931321
+         dage0_7_97 |  -1.424464   .6914738    -2.06   0.040    -2.783023    -.065905
+        dage8_17_97 |   1.124228   .5410778     2.08   0.038     .0611566      2.1873
+       dage18_54_97 |    2.11518   1.218316     1.74   0.083     -.278482    4.508841
+         dage55p_97 |   .1447697   .5552537     0.26   0.794    -.9461535    1.235693
+          homeown97 |   .3296794   1.072052     0.31   0.759    -1.776613    2.435972
+        dirtfloor97 |   1.615655   .6446812     2.51   0.013     .3490307    2.882279
+      electricity97 |   .5958948   .9584322     0.62   0.534    -1.287165    2.478955
+         org_faenas |   -3.63867   2.248176    -1.62   0.106    -8.055727    .7783862
+           min_dist |  -.0064679   .0116052    -0.56   0.578    -.0292689    .0163331
+       lnup_cwagepm |  -.0756596   .2035986    -0.37   0.710    -.4756758    .3243566
+       up2_mcwagepm |  -1.743387    1.38931    -1.25   0.210    -4.473007    .9862317
+       dummy_age_hh |   3.499842   3.407895     1.03   0.305    -3.195749    10.19543
+      dummy_educ_hh |  -3.449424   3.039301    -1.13   0.257    -9.420827     2.52198
+ dummy_ethnicity_hh |   .9517476   3.990477     0.24   0.812     -6.88846    8.791955
+       dummy_age_sp |   -3.43484   3.452763    -0.99   0.320    -10.21859    3.348906
+      dummy_educ_sp |   1.503248   3.501426     0.43   0.668    -5.376106    8.382602
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -6.026589   3.213717    -1.88   0.061    -12.34067    .2874957
+dummy_electricity97 |   6.631922   16.20241     0.41   0.682    -25.20143    38.46527
+              _cons |   6.447116   3.469886     1.86   0.064    -.3702713     13.2645
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+homeprod_~e2 |      3,783    12.39789    20.19941          0   105.6378
+
+added scalar:
+               e(mean) =  12.39789
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+homeprod_~e2 |      1,874    25.02733    22.53053   .4556849   105.6378
+
+added scalar:
+             e(mean_p) =  25.027332
+
+added scalar:
+                 e(sd) =  22.530531
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dhomeprod_~2 |      9,984    .5103165    .4999186          0          1
+
+added scalar:
+               e(prop) =  .51031651
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,977
+                                                F(33, 499)        =      31.68
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1239
+                                                Root MSE          =     30.859
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+witransfer_act_m~e2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |  -1.723832   1.328017    -1.30   0.195    -4.333026    .8853609
+           nbani197 |  -1.205029   .4009366    -3.01   0.003    -1.992761   -.4172969
+           nbani297 |  -.0031264   .2131357    -0.01   0.988    -.4218803    .4156276
+               ha97 |   .2789568   .1927376     1.45   0.148    -.0997204     .657634
+      hhsize_ae2_97 |  -.4990098   .2626898    -1.90   0.058    -1.015124    .0171046
+              no497 |  -4.484797   1.141118    -3.93   0.000    -6.726785   -2.242809
+             big497 |   .3958426   1.264745     0.31   0.754    -2.089038    2.880723
+             age_hh |    .524761   .1371283     3.83   0.000     .2553411     .794181
+            age_hh2 |   -.004026   .0013266    -3.03   0.003    -.0066324   -.0014196
+          female_hh |   4.608566   1.571892     2.93   0.004     1.520223    7.696909
+           educ1_hh |   -7.42225    .988744    -7.51   0.000    -9.364864   -5.479635
+       ethnicity_hh |   3.632515   1.563394     2.32   0.021     .5608695    6.704161
+             age_sp |   .2608834   .0909574     2.87   0.004     .0821767      .43959
+            age_sp2 |  -.0016043   .0008134    -1.97   0.049    -.0032024   -6.30e-06
+           educ1_sp |  -9.096084   .9457987    -9.62   0.000    -10.95432   -7.237846
+         dage0_7_97 |   8.019178   1.129782     7.10   0.000     5.799462    10.23889
+        dage8_17_97 |   16.03496   .9454147    16.96   0.000     14.17748    17.89244
+       dage18_54_97 |  -14.65217    2.15754    -6.79   0.000    -18.89115   -10.41319
+         dage55p_97 |  -3.802602   .8516526    -4.46   0.000    -5.475869   -2.129336
+          homeown97 |   1.147264   1.271067     0.90   0.367    -1.350038    3.644567
+        dirtfloor97 |  -1.388655   .8452631    -1.64   0.101    -3.049368     .272058
+      electricity97 |   5.383088   1.293884     4.16   0.000     2.840957    7.925219
+         org_faenas |   3.652981   3.295907     1.11   0.268    -2.822585    10.12855
+           min_dist |   .0397667   .0150103     2.65   0.008     .0102755     .069258
+       lnup_cwagepm |   .5984217   .2545298     2.35   0.019     .0983395    1.098504
+       up2_mcwagepm |  -15.04961   2.942327    -5.11   0.000    -20.83049   -9.268738
+       dummy_age_hh |   12.63151   7.885801     1.60   0.110    -2.861958    28.12497
+      dummy_educ_hh |  -4.251906   5.639897    -0.75   0.451    -15.33278    6.828966
+ dummy_ethnicity_hh |   6.553447   8.157621     0.80   0.422    -9.474071    22.58096
+       dummy_age_sp |   14.46672   5.658778     2.56   0.011     3.348751    25.58469
+      dummy_educ_sp |  -9.869696    5.63641    -1.75   0.081    -20.94372    1.204323
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -.4563436   6.784361    -0.07   0.946    -13.78578    12.87309
+dummy_electricity97 |  -11.18805   7.009432    -1.60   0.111    -24.95968    2.583591
+              _cons |   24.30805   5.797639     4.19   0.000     12.91726    35.69884
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+witransfe~e2 |      3,783    49.44846    32.81112          0   159.7033
+
+added scalar:
+               e(mean) =  49.44846
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+witransfe~e2 |      3,497    53.49257    30.79367   2.782963   159.7033
+
+added scalar:
+             e(mean_p) =  53.492572
+
+added scalar:
+                 e(sd) =  30.793666
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dwitransfe~2 |      9,977    .9061842    .2915869          0          1
+
+added scalar:
+               e(prop) =  .90618422
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,441
+                                                F(33, 499)        =      20.18
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1437
+                                                Root MSE          =     8.9374
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+    amount_p_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   .1530104   .3996632     0.38   0.702    -.6322196    .9382404
+           nbani197 |   .8269005   .2282528     3.62   0.000     .3784455    1.275356
+           nbani297 |   .3010559   .0753005     4.00   0.000     .1531108    .4490009
+               ha97 |     .48757   .1006608     4.84   0.000     .2897988    .6853412
+      hhsize_ae2_97 |  -.0001587   .0896206    -0.00   0.999     -.176239    .1759215
+              no497 |   -1.36804   .2134066    -6.41   0.000    -1.787326   -.9487539
+             big497 |   3.770413   .5953998     6.33   0.000     2.600613    4.940212
+             age_hh |   .1431425   .0358528     3.99   0.000     .0727015    .2135835
+            age_hh2 |  -.0010211   .0003416    -2.99   0.003    -.0016922     -.00035
+          female_hh |  -1.719595   .3993606    -4.31   0.000    -2.504231   -.9349597
+           educ1_hh |  -.1067951   .2619336    -0.41   0.684    -.6214238    .4078335
+       ethnicity_hh |   .0338928   .3868805     0.09   0.930    -.7262226    .7940083
+             age_sp |  -.0133141   .0276836    -0.48   0.631    -.0677048    .0410766
+            age_sp2 |   .0001055   .0002363     0.45   0.656    -.0003588    .0005697
+           educ1_sp |  -.0853752   .2385865    -0.36   0.721    -.5541332    .3833827
+         dage0_7_97 |  -1.225836   .3293324    -3.72   0.000    -1.872885   -.5787867
+        dage8_17_97 |   .3077894   .2677439     1.15   0.251     -.218255    .8338338
+       dage18_54_97 |   1.405132   .6411104     2.19   0.029     .1455234     2.66474
+         dage55p_97 |   .3166447   .2937255     1.08   0.282    -.2604464    .8937358
+          homeown97 |   1.656366   .2710065     6.11   0.000     1.123911     2.18882
+        dirtfloor97 |   -.832132   .3027428    -2.75   0.006     -1.42694   -.2373244
+      electricity97 |   .9762793   .3455117     2.83   0.005     .2974424    1.655116
+         org_faenas |  -.3939024   .7397647    -0.53   0.595     -1.84734    1.059535
+           min_dist |   .0085605   .0050591     1.69   0.091    -.0013792    .0185003
+       lnup_cwagepm |  -.0024751   .0621059    -0.04   0.968    -.1244964    .1195462
+       up2_mcwagepm |  -1.529623   .7956928    -1.92   0.055    -3.092944     .033698
+       dummy_age_hh |    2.00141   1.923116     1.04   0.299    -1.776992    5.779813
+      dummy_educ_hh |   .9621938   1.757662     0.55   0.584    -2.491137    4.415525
+ dummy_ethnicity_hh |  -5.377003    1.91054    -2.81   0.005    -9.130698   -1.623308
+       dummy_age_sp |  -.4680335   1.759858    -0.27   0.790    -3.925678    2.989611
+      dummy_educ_sp |   .9914956   1.714816     0.58   0.563    -2.377654    4.360646
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -.5792703   1.725771    -0.34   0.737    -3.969943    2.811402
+dummy_electricity97 |   1.771693   3.331786     0.53   0.595    -4.774364     8.31775
+              _cons |  -3.711929   1.486799    -2.50   0.013    -6.633087   -.7907714
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_p_~e2 |      3,617    4.575356    9.689367          0   59.62756
+
+added scalar:
+               e(mean) =  4.575356
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_p_~e2 |        981    16.86958    11.78143   .2500744   59.62756
+
+added scalar:
+             e(mean_p) =  16.869585
+
+added scalar:
+                 e(sd) =  11.781428
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+damount_p_~2 |      9,441    .2812202    .4496185          0          1
+
+added scalar:
+               e(prop) =  .28122021
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,978
+                                                F(33, 499)        =      34.06
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1365
+                                                Root MSE          =     34.221
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+ amount_t_pb_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |  -2.418686   1.443447    -1.68   0.094    -5.254669    .4172965
+           nbani197 |   .1131554   .5581444     0.20   0.839    -.9834472    1.209758
+           nbani297 |   .4241972   .2566545     1.65   0.099    -.0800595    .9284539
+               ha97 |   .9602068   .2301465     4.17   0.000     .5080312    1.412382
+      hhsize_ae2_97 |  -.6709616   .2951699    -2.27   0.023    -1.250891   -.0910326
+              no497 |  -5.479925   1.230814    -4.45   0.000    -7.898141   -3.061708
+             big497 |   4.024531   1.407063     2.86   0.004     1.260033    6.789029
+             age_hh |    .753762   .1497819     5.03   0.000     .4594811    1.048043
+            age_hh2 |  -.0054705   .0014376    -3.81   0.000    -.0082951   -.0026459
+          female_hh |   4.736283   1.733307     2.73   0.007     1.330805    8.141762
+           educ1_hh |   -8.24332   1.123006    -7.34   0.000    -10.44972   -6.036917
+       ethnicity_hh |   3.160197   1.685191     1.88   0.061    -.1507466    6.471141
+             age_sp |   .2208202    .097381     2.27   0.024      .029493    .4121475
+            age_sp2 |  -.0013886   .0008851    -1.57   0.117    -.0031276    .0003503
+           educ1_sp |  -9.335512   .9908857    -9.42   0.000    -11.28233    -7.38869
+         dage0_7_97 |    6.65102   1.240177     5.36   0.000     4.214409    9.087632
+        dage8_17_97 |   16.69411   1.058274    15.77   0.000     14.61489    18.77333
+       dage18_54_97 |  -13.89258   2.433303    -5.71   0.000    -18.67336   -9.111797
+         dage55p_97 |  -2.950054   1.002677    -2.94   0.003    -4.920043   -.9800654
+          homeown97 |   2.734206   1.402772     1.95   0.052     -.021861    5.490274
+        dirtfloor97 |  -2.331776   .9812967    -2.38   0.018    -4.259759   -.4037939
+      electricity97 |   7.233837   1.401854     5.16   0.000     4.479574      9.9881
+         org_faenas |   2.962934   3.544324     0.84   0.404    -4.000703    9.926571
+           min_dist |   .0516566   .0170712     3.03   0.003     .0181164    .0851968
+       lnup_cwagepm |   .6269641   .2792865     2.24   0.025     .0782418    1.175686
+       up2_mcwagepm |   -17.0551   3.418765    -4.99   0.000    -23.77205   -10.33815
+       dummy_age_hh |   16.51083   8.824667     1.87   0.062    -.8272507    33.84892
+      dummy_educ_hh |  -4.301128   5.713282    -0.75   0.452    -15.52618    6.923926
+ dummy_ethnicity_hh |   4.846466   9.124643     0.53   0.596    -13.08099    22.77392
+       dummy_age_sp |   13.19991   6.190486     2.13   0.033      1.03728    25.36254
+      dummy_educ_sp |  -8.025919   6.248356    -1.28   0.200    -20.30225    4.250409
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -2.927563   7.303315    -0.40   0.689     -17.2766    11.42147
+dummy_electricity97 |  -9.183829   9.052131    -1.01   0.311    -26.96882    8.601158
+              _cons |   20.78217   6.071673     3.42   0.001     8.852971    32.71136
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~b_pp_ae2 |      3,791    55.82845    36.95018          0   188.0899
+
+added scalar:
+               e(mean) =  55.828453
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~b_pp_ae2 |      3,579    59.13542    35.36381   .9788264   188.0899
+
+added scalar:
+             e(mean_p) =  59.135419
+
+added scalar:
+                 e(sd) =  35.363805
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dam~b_pp_ae2 |      9,978    .9265384    .2609058          0          1
+
+added scalar:
+               e(prop) =  .92653838
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,673
+                                                F(33, 499)        =       9.18
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0477
+                                                Root MSE          =     10.859
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+ amount_t_pr_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |  -.0061308   .3400032    -0.02   0.986    -.6741451    .6618835
+           nbani197 |  -.2323805   .1849481    -1.26   0.210    -.5957534    .1309924
+           nbani297 |   .2323999   .0828575     2.80   0.005     .0696074    .3951924
+               ha97 |  -.0652086   .0775281    -0.84   0.401    -.2175304    .0871132
+      hhsize_ae2_97 |   .3544216   .0890621     3.98   0.000     .1794386    .5294046
+              no497 |  -.8935032   .2886766    -3.10   0.002    -1.460675   -.3263318
+             big497 |   .6478565   .4550953     1.42   0.155    -.2462825    1.541995
+             age_hh |   .0654276   .0368394     1.78   0.076    -.0069518     .137807
+            age_hh2 |  -.0000127   .0003348    -0.04   0.970    -.0006704    .0006451
+          female_hh |   3.775467     .63928     5.91   0.000     2.519455    5.031479
+           educ1_hh |  -.0199301   .2537345    -0.08   0.937    -.5184496    .4785894
+       ethnicity_hh |  -1.449733    .388477    -3.73   0.000    -2.212985   -.6864805
+             age_sp |   .0280833    .025916     1.08   0.279    -.0228346    .0790011
+            age_sp2 |  -.0000907   .0002247    -0.40   0.687    -.0005321    .0003508
+           educ1_sp |   .7896431   .2818289     2.80   0.005     .2359256    1.343361
+         dage0_7_97 |  -1.023272   .3736275    -2.74   0.006    -1.757349   -.2891952
+        dage8_17_97 |   .4605592   .2379068     1.94   0.053    -.0068633    .9279817
+       dage18_54_97 |  -2.170037   .8433564    -2.57   0.010    -3.827004   -.5130699
+         dage55p_97 |  -.5891233   .3266387    -1.80   0.072     -1.23088    .0526334
+          homeown97 |   .4877076   .3637345     1.34   0.181    -.2269323    1.202347
+        dirtfloor97 |  -1.187127   .3819108    -3.11   0.002    -1.937479    -.436776
+      electricity97 |   .2657956   .2815724     0.94   0.346    -.2874179    .8190091
+         org_faenas |   .0703753   .5941921     0.12   0.906    -1.097051    1.237802
+           min_dist |   .0025012   .0035548     0.70   0.482    -.0044829    .0094854
+       lnup_cwagepm |    .126269   .0610881     2.07   0.039     .0062474    .2462905
+       up2_mcwagepm |  -.8989722   .3766396    -2.39   0.017    -1.638967   -.1589773
+       dummy_age_hh |  -.8500969   1.865876    -0.46   0.649    -4.516038    2.815845
+      dummy_educ_hh |  -1.037782   1.058228    -0.98   0.327    -3.116914    1.041351
+ dummy_ethnicity_hh |  -.8330344   1.408722    -0.59   0.555    -3.600793    1.934724
+       dummy_age_sp |  -.2450255   1.462867    -0.17   0.867    -3.119163    2.629112
+      dummy_educ_sp |   -.474429   1.457385    -0.33   0.745    -3.337797    2.388939
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   .5785962   2.622481     0.22   0.825     -4.57387    5.731062
+dummy_electricity97 |  -2.410481   .7759561    -3.11   0.002    -3.935024   -.8859369
+              _cons |  -.7391532   1.620995    -0.46   0.649    -3.923969    2.445663
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~r_pp_ae2 |      3,712    3.213221    10.97269          0   88.03241
+
+added scalar:
+               e(mean) =  3.2132209
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~r_pp_ae2 |        605    19.71484    20.34397   .3718196   88.03241
+
+added scalar:
+             e(mean_p) =  19.714836
+
+added scalar:
+                 e(sd) =  20.343965
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dam~r_pp_ae2 |      9,673    .1543472    .3612999          0          1
+
+added scalar:
+               e(prop) =  .15434715
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      9,632
+                                                F(33, 499)        =       3.86
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0185
+                                                Root MSE          =     4.5389
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+amount_borrowed_~e2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   .0656387   .1376344     0.48   0.634    -.2047756    .3360529
+           nbani197 |   .0332003   .0784731     0.42   0.672    -.1209781    .1873787
+           nbani297 |   .0386623   .0393759     0.98   0.327    -.0387007    .1160252
+               ha97 |   .0033433   .0428284     0.08   0.938    -.0808029    .0874896
+      hhsize_ae2_97 |   .0216602   .0405223     0.53   0.593    -.0579552    .1012756
+              no497 |  -.0669213   .1723814    -0.39   0.698    -.4056042    .2717615
+             big497 |   .3702882   .2207695     1.68   0.094    -.0634642    .8040405
+             age_hh |  -.0053513    .017799    -0.30   0.764    -.0403215    .0296189
+            age_hh2 |   3.02e-06    .000162     0.02   0.985    -.0003152    .0003212
+          female_hh |   -.088942   .1639939    -0.54   0.588    -.4111457    .2332616
+           educ1_hh |    .143999   .1308855     1.10   0.272    -.1131557    .4011536
+       ethnicity_hh |  -.7353561   .1148245    -6.40   0.000    -.9609551   -.5097571
+             age_sp |   -.002103   .0099076    -0.21   0.832    -.0215686    .0173627
+            age_sp2 |  -.0000133   .0000713    -0.19   0.852    -.0001534    .0001267
+           educ1_sp |  -.0145664   .1368428    -0.11   0.915    -.2834254    .2542927
+         dage0_7_97 |   .1182111   .1354866     0.87   0.383    -.1479834    .3844056
+        dage8_17_97 |   .0103262   .1138093     0.09   0.928    -.2132783    .2339306
+       dage18_54_97 |   .1566475   .2013425     0.78   0.437     -.238936     .552231
+         dage55p_97 |  -.0732821   .1260446    -0.58   0.561    -.3209255    .1743614
+          homeown97 |  -.0802704   .2464206    -0.33   0.745    -.5644202    .4038795
+        dirtfloor97 |  -.0409984   .1245505    -0.33   0.742    -.2857064    .2037096
+      electricity97 |   .2024646   .1111928     1.82   0.069    -.0159992    .4209285
+         org_faenas |  -.5233185   .2478343    -2.11   0.035    -1.010246   -.0363912
+           min_dist |  -.0044611   .0014994    -2.98   0.003    -.0074069   -.0015152
+       lnup_cwagepm |   .0335524   .0208976     1.61   0.109    -.0075058    .0746105
+       up2_mcwagepm |  -.1219281   .3124676    -0.39   0.697    -.7358424    .4919862
+       dummy_age_hh |  -1.166742   1.594349    -0.73   0.465    -4.299206    1.965723
+      dummy_educ_hh |   .2872905   1.363005     0.21   0.833    -2.390645    2.965226
+ dummy_ethnicity_hh |    .754374   2.418478     0.31   0.755    -3.997281    5.506029
+       dummy_age_sp |   .5219357   .4035551     1.29   0.196    -.2709409    1.314812
+      dummy_educ_sp |   -.679857    .421841    -1.61   0.108     -1.50866    .1489464
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -1.078326   .2054154    -5.25   0.000    -1.481912   -.6747405
+dummy_electricity97 |  -.7115375    .245526    -2.90   0.004     -1.19393   -.2291452
+              _cons |   1.983869   .6272601     3.16   0.002     .7514729    3.216265
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_bo~e2 |      3,654    1.070075    4.465495          0   39.77538
+
+added scalar:
+               e(mean) =  1.0700751
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_bo~e2 |        327    11.95735    9.636546   .2721361   39.77538
+
+added scalar:
+             e(mean_p) =  11.957353
+
+added scalar:
+                 e(sd) =  9.6365456
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+damount_bo~2 |      9,632    .0904277    .2868085          0          1
+
+added scalar:
+               e(prop) =  .09042774
+
+. foreach x in outwage_lw_hh_pp_ae2 {;
+  2.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 >2 & consumo_pp_ae2_tl_t2 <199 & `x'_tl_
+> t2 <=190, cl(comuid);
+  3.         sum `x' if e(sample) & t2_c1_op ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      8,754
+                                                F(33, 498)        =      12.76
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0707
+                                                Root MSE          =     154.12
+
+                                      (Std. Err. adjusted for 499 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+outwage_lw_hh_pp~e2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   4.068413   6.214593     0.65   0.513    -8.141641    16.27847
+           nbani197 |  -5.634028   2.476213    -2.28   0.023    -10.49914   -.7689163
+           nbani297 |  -4.704912   .9350719    -5.03   0.000    -6.542084   -2.867739
+               ha97 |  -2.618439   1.075113    -2.44   0.015    -4.730757    -.506122
+      hhsize_ae2_97 |   -3.51765   1.314946    -2.68   0.008    -6.101176   -.9341237
+              no497 |   14.22765   6.198272     2.30   0.022     2.049667    26.40564
+             big497 |  -4.433599   6.490524    -0.68   0.495    -17.18578    8.318585
+             age_hh |  -.8939677    .850066    -1.05   0.293    -2.564125      .77619
+            age_hh2 |  -.0048872   .0078981    -0.62   0.536    -.0204048    .0106304
+          female_hh |  -29.91255   10.55772    -2.83   0.005    -50.65572   -9.169388
+           educ1_hh |    3.64831   4.434045     0.82   0.411    -5.063431    12.36005
+       ethnicity_hh |  -36.01182   6.407346    -5.62   0.000    -48.60058   -23.42306
+             age_sp |   1.580423   .6042017     2.62   0.009     .3933247    2.767522
+            age_sp2 |  -.0077425   .0056652    -1.37   0.172    -.0188731    .0033882
+           educ1_sp |   2.468415   4.981767     0.50   0.620    -7.319457    12.25629
+         dage0_7_97 |  -16.22749   5.392699    -3.01   0.003    -26.82274   -5.632246
+        dage8_17_97 |   19.51019   4.448775     4.39   0.000     10.76951    28.25088
+       dage18_54_97 |   57.47358    10.0367     5.73   0.000     37.75408    77.19308
+         dage55p_97 |  -1.446048   4.903789    -0.29   0.768    -11.08071    8.188618
+          homeown97 |  -16.59364   8.146921    -2.04   0.042    -32.60021   -.5870645
+        dirtfloor97 |  -18.15694   4.717082    -3.85   0.000    -27.42477   -8.889105
+      electricity97 |   .4535319   5.075427     0.09   0.929    -9.518356    10.42542
+         org_faenas |    11.1486   9.617485     1.16   0.247    -7.747252    30.04444
+           min_dist |  -.2780519   .0820167    -3.39   0.001    -.4391934   -.1169104
+       lnup_cwagepm |    4.16715   .9825555     4.24   0.000     2.236685    6.097615
+       up2_mcwagepm |  -4.550613   12.05414    -0.38   0.706    -28.23385    19.13263
+       dummy_age_hh |   .7797405   45.00592     0.02   0.986    -87.64514    89.20462
+      dummy_educ_hh |   42.41334   37.57515     1.13   0.260    -31.41201    116.2387
+ dummy_ethnicity_hh |  -53.74893   49.30782    -1.09   0.276    -150.6259    43.12807
+       dummy_age_sp |   93.64036    37.8549     2.47   0.014     19.26537    168.0154
+      dummy_educ_sp |  -68.49484   37.88154    -1.81   0.071    -142.9222    5.932497
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -86.88182   23.15223    -3.75   0.000    -132.3699   -41.39372
+dummy_electricity97 |   145.9587   139.8596     1.04   0.297    -128.8289    420.7464
+              _cons |   173.3213    25.5562     6.78   0.000       123.11    223.5325
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+outwage_l~e2 |      3,303     154.411    156.6222          0    634.335
+
+added scalar:
+               e(mean) =  154.41097
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+outwage_l~e2 |      2,153    236.8878    134.5083    3.17219    634.335
+
+added scalar:
+             e(mean_p) =  236.8878
+
+added scalar:
+                 e(sd) =  134.50828
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+doutwage_l~2 |      8,754    .6602696    .4736447          0          1
+
+added scalar:
+               e(prop) =  .66026959
+
+. ***Output Table 5;
+. estout consumo_pp_ae2 homeprod_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_pr_pp_ae2 amount_borrowed_m_pp_ae2 o
+> utwage_lw_hh_pp_ae2 
+>         using "$out_p/consumo_w7.text", stats(N mean mean_p sd prop, fmt(%9.0fc %9.3fc %9.3fc %9.3fc %9.3fc) 
+>         labels("Number Observations" "Mean Dep Var (Control Households)" "Mean Dep Var | y >0(Control Households)" "SD Dep 
+> Var (Control Households)"
+>          "Prop Dep Var >0")) keep(t2_c1_op) cells(b(fmt(%9.3f) star) se(fmt(%9.3f) par(( ))))
+>         starl(+ 0.1 * 0.05 ** 0.01) legend label collabels(none) title(ITT Eligibles - AE2) replace;
+(note: file C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output/consumo_w7.text not found)
+(output written to C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output/consumo_w7.text)
+
+. *======================================================
+>  ITT results: wave 7 - Eligibles -- Consumption AE2 
+>                           Sensitivity to Triming Outliers & Food vs. Non-Food Expenditures (Table A4)
+> *=======================================================;
+. foreach x in consumo_pp_ae2 {;
+  2.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls, cl(comuid);
+  3.         sum `x' if e(sample) & t2_c1_op ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x'_notrim, title (notrim);
+ 15.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 <200, cl(comuid);
+ 16.         sum `x' if e(sample) & t2_c1_op ==0;
+ 17.         scalar mean =r(mean);
+ 18.         estadd scalar mean;
+ 19.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+ 20.         scalar mean_p =r(mean);
+ 21.         estadd scalar mean_p;
+ 22.         scalar sd =r(sd);
+ 23.         estadd scalar sd;
+ 24.         sum d`x' if e(sample);
+ 25.         scalar prop =r(mean);
+ 26.         estadd scalar prop;
+ 27.         est store `x'_top5, title (top0.5);
+ 28.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 >1 & consumo_pp_ae2_tl_t2 <200, cl(comui
+> d);
+ 29.         sum `x' if e(sample) & t2_c1_op ==0;
+ 30.         scalar mean =r(mean);
+ 31.         estadd scalar mean;
+ 32.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+ 33.         scalar mean_p =r(mean);
+ 34.         estadd scalar mean_p;
+ 35.         scalar sd =r(sd);
+ 36.         estadd scalar sd;
+ 37.         sum d`x' if e(sample);
+ 38.         scalar prop =r(mean);
+ 39.         estadd scalar prop;
+ 40.         est store `x'_tb5, title (t&b0.5);
+ 41.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 <199, cl(comuid);
+ 42.         sum `x' if e(sample) & t2_c1_op ==0;
+ 43.         scalar mean =r(mean);
+ 44.         estadd scalar mean;
+ 45.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+ 46.         scalar mean_p =r(mean);
+ 47.         estadd scalar mean_p;
+ 48.         scalar sd =r(sd);
+ 49.         estadd scalar sd;
+ 50.         sum d`x' if e(sample);
+ 51.         scalar prop =r(mean);
+ 52.         estadd scalar prop;
+ 53.         est store `x'_top1, title (top1);
+ 54.         reg `x' t2_c1_op $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_t2 >2 & consumo_pp_ae2_tl_t2 <199, cl(comui
+> d);
+ 55.         sum `x' if e(sample) & t2_c1_op ==0;
+ 56.         scalar mean =r(mean);
+ 57.         estadd scalar mean;
+ 58.         sum `x' if e(sample) & t2_c1_op ==0 & `x'>0;
+ 59.         scalar mean_p =r(mean);
+ 60.         estadd scalar mean_p;
+ 61.         scalar sd =r(sd);
+ 62.         estadd scalar sd;
+ 63.         sum d`x' if e(sample);
+ 64.         scalar prop =r(mean);
+ 65.         estadd scalar prop;
+ 66.         est store `x'_tb1, title (t&b1);
+ 67. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,373
+                                                F(33, 499)        =      15.23
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.0700
+                                                Root MSE          =     191.32
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   12.83927   7.117426     1.80   0.072    -1.144546    26.82309
+           nbani197 |   .4457279   2.304828     0.19   0.847    -4.082635     4.97409
+           nbani297 |   2.629629   1.256845     2.09   0.037     .1602697    5.098989
+               ha97 |  -.1175606   1.042821    -0.11   0.910    -2.166421      1.9313
+      hhsize_ae2_97 |  -7.260039   1.224549    -5.93   0.000    -9.665947   -4.854132
+              no497 |   5.527494   10.85888     0.51   0.611    -15.80727    26.86226
+             big497 |   16.93724   7.067977     2.40   0.017     3.050573     30.8239
+             age_hh |   1.881588   .8327571     2.26   0.024     .2454456     3.51773
+            age_hh2 |  -.0230239   .0089153    -2.58   0.010      -.04054   -.0055078
+          female_hh |    34.8653   13.63571     2.56   0.011     8.074822    61.65578
+           educ1_hh |  -19.45387    6.22933    -3.12   0.002    -31.69281   -7.214917
+       ethnicity_hh |  -40.92449   9.265038    -4.42   0.000    -59.12778    -22.7212
+             age_sp |   .8982003   .5300973     1.69   0.091    -.1432974    1.939698
+            age_sp2 |   .0013492   .0046081     0.29   0.770    -.0077045    .0104029
+           educ1_sp |  -25.81041    4.59005    -5.62   0.000    -34.82862   -16.79221
+         dage0_7_97 |  -28.39572   6.491275    -4.37   0.000    -41.14932   -15.64213
+        dage8_17_97 |   11.56222   5.219202     2.22   0.027     1.307897    21.81654
+       dage18_54_97 |  -34.84904   24.35363    -1.43   0.153    -82.69732    12.99925
+         dage55p_97 |  -7.271999   4.595145    -1.58   0.114    -16.30022    1.756218
+          homeown97 |    4.92194   6.704048     0.73   0.463    -8.249699    18.09358
+        dirtfloor97 |  -32.64457   5.069943    -6.44   0.000    -42.60564   -22.68351
+      electricity97 |   11.85904   7.743859     1.53   0.126    -3.355542    27.07363
+         org_faenas |    1.34511   12.39513     0.11   0.914    -23.00797    25.69819
+           min_dist |  -.2273367   .0868868    -2.62   0.009    -.3980458   -.0566275
+       lnup_cwagepm |   1.615537   1.323892     1.22   0.223    -.9855519    4.216626
+       up2_mcwagepm |  -21.86278   15.87039    -1.38   0.169     -53.0438    9.318245
+       dummy_age_hh |   93.95887     55.718     1.69   0.092    -15.51193    203.4297
+      dummy_educ_hh |  -32.27411   21.64648    -1.49   0.137    -74.80359    10.25537
+ dummy_ethnicity_hh |   86.21473    52.2753     1.65   0.100     -16.4921    188.9215
+       dummy_age_sp |    4.94831   35.81862     0.14   0.890    -65.42558     75.3222
+      dummy_educ_sp |   18.27679   30.97805     0.59   0.555     -42.5867    79.14027
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -32.66052   28.69739    -1.14   0.256    -89.04312    23.72208
+dummy_electricity97 |   660.1389    429.353     1.54   0.125    -183.4235    1503.701
+              _cons |    282.372   27.91759    10.11   0.000     227.5215    337.2225
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,943    202.6959    181.4765   .4772817   3224.009
+
+added scalar:
+               e(mean) =  202.6959
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,943    202.6959    181.4765   .4772817   3224.009
+
+added scalar:
+             e(mean_p) =  202.6959
+
+added scalar:
+                 e(sd) =  181.47652
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,373           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,322
+                                                F(33, 499)        =      18.62
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1183
+                                                Root MSE          =     126.42
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   14.37675    5.00102     2.87   0.004     4.551096     24.2024
+           nbani197 |  -.1824607   1.782104    -0.10   0.918    -3.683812    3.318891
+           nbani297 |    3.08563   .9946771     3.10   0.002     1.131359    5.039901
+               ha97 |  -.0871606   .8646885    -0.10   0.920    -1.786039    1.611718
+      hhsize_ae2_97 |  -6.446356   .9971024    -6.47   0.000    -8.405393    -4.48732
+              no497 |   1.189982   4.886692     0.24   0.808    -8.411045    10.79101
+             big497 |    10.0863   5.535017     1.82   0.069    -.7885135    20.96111
+             age_hh |    .529698   .6175018     0.86   0.391    -.6835259    1.742922
+            age_hh2 |  -.0074107   .0057272    -1.29   0.196    -.0186632    .0038417
+          female_hh |   30.47757   7.317925     4.16   0.000     16.09983    44.85531
+           educ1_hh |  -11.62131   3.947654    -2.94   0.003    -19.37739   -3.865241
+       ethnicity_hh |  -34.71917   5.400224    -6.43   0.000    -45.32915   -24.10919
+             age_sp |   .5459955   .4185866     1.30   0.193     -.276414    1.368405
+            age_sp2 |  -.0013508   .0036731    -0.37   0.713    -.0085674    .0058658
+           educ1_sp |  -22.51068   3.524825    -6.39   0.000    -29.43601   -15.58535
+         dage0_7_97 |  -23.97536   4.314452    -5.56   0.000    -32.45209   -15.49863
+        dage8_17_97 |   18.78158   3.259819     5.76   0.000     12.37692    25.18625
+       dage18_54_97 |  -7.875918   8.807758    -0.89   0.372    -25.18078    9.428943
+         dage55p_97 |  -3.579606   3.833704    -0.93   0.351     -11.1118    3.952584
+          homeown97 |   2.544594   5.292181     0.48   0.631     -7.85311     12.9423
+        dirtfloor97 |  -33.65848   4.296371    -7.83   0.000    -42.09969   -25.21727
+      electricity97 |   15.89729   4.720611     3.37   0.001     6.622564    25.17201
+         org_faenas |   6.888545   6.501136     1.06   0.290    -5.884428    19.66152
+           min_dist |    -.23162    .064829    -3.57   0.000    -.3589914   -.1042486
+       lnup_cwagepm |   3.036063   .8745691     3.47   0.001     1.317771    4.754354
+       up2_mcwagepm |  -7.092307   14.27686    -0.50   0.620    -35.14247    20.95786
+       dummy_age_hh |    25.9304   30.48117     0.85   0.395    -33.95685    85.81766
+      dummy_educ_hh |   -23.6828    18.5687    -1.28   0.203    -60.16528    12.79967
+ dummy_ethnicity_hh |   106.6836   37.94895     2.81   0.005     32.12422    181.2431
+       dummy_age_sp |   17.33733   27.87306     0.62   0.534    -37.42569    72.10034
+      dummy_educ_sp |  -4.631591   27.24592    -0.17   0.865    -58.16245    48.89926
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -27.53062    27.0952    -1.02   0.310    -80.76536    25.70412
+dummy_electricity97 |    170.721   30.23318     5.65   0.000      111.321     230.121
+              _cons |   262.4297   21.31818    12.31   0.000     220.5452    304.3142
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,921    193.2128    124.7946   .4772817    1096.73
+
+added scalar:
+               e(mean) =  193.21282
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,921    193.2128    124.7946   .4772817    1096.73
+
+added scalar:
+             e(mean_p) =  193.21282
+
+added scalar:
+                 e(sd) =  124.79462
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,322           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,269
+                                                F(33, 499)        =      18.49
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1175
+                                                Root MSE          =     126.16
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   14.09056   5.019384     2.81   0.005     4.228825    23.95229
+           nbani197 |   .0000583   1.782941     0.00   1.000    -3.502938    3.503054
+           nbani297 |   3.106657   .9935763     3.13   0.002     1.154549    5.058766
+               ha97 |  -.1313482   .8626643    -0.15   0.879     -1.82625    1.563554
+      hhsize_ae2_97 |  -6.458156   1.006477    -6.42   0.000    -8.435611   -4.480701
+              no497 |   2.265494   4.930491     0.46   0.646    -7.421587    11.95257
+             big497 |   10.43263    5.51226     1.89   0.059    -.3974673    21.26273
+             age_hh |   .5736884   .6197867     0.93   0.355    -.6440246    1.791401
+            age_hh2 |  -.0081017   .0057498    -1.41   0.159    -.0193984     .003195
+          female_hh |   29.12575   7.346604     3.96   0.000     14.69166    43.55984
+           educ1_hh |  -11.53138   3.943117    -2.92   0.004    -19.27853   -3.784218
+       ethnicity_hh |  -34.62093   5.410116    -6.40   0.000    -45.25035   -23.99152
+             age_sp |   .5386193   .4186526     1.29   0.199    -.2839199    1.361158
+            age_sp2 |  -.0011604    .003677    -0.32   0.752    -.0083847    .0060639
+           educ1_sp |  -22.52312   3.530586    -6.38   0.000    -29.45977   -15.58647
+         dage0_7_97 |  -24.45586   4.312977    -5.67   0.000     -32.9297   -15.98203
+        dage8_17_97 |   18.84838   3.244348     5.81   0.000     12.47411    25.22264
+       dage18_54_97 |  -9.988692   8.986583    -1.11   0.267     -27.6449    7.667513
+         dage55p_97 |   -3.18104   3.794703    -0.84   0.402     -10.6366    4.274525
+          homeown97 |   2.550803   5.281086     0.48   0.629    -7.825103    12.92671
+        dirtfloor97 |  -33.19082   4.310853    -7.70   0.000    -41.66048   -24.72116
+      electricity97 |   15.38497   4.736044     3.25   0.001     6.079926    24.69002
+         org_faenas |   6.706062   6.574507     1.02   0.308    -6.211065    19.62319
+           min_dist |  -.2314243   .0655456    -3.53   0.000    -.3602037   -.1026449
+       lnup_cwagepm |   2.922602   .8800703     3.32   0.001     1.193502    4.651702
+       up2_mcwagepm |  -7.682035   14.38673    -0.53   0.594    -35.94807      20.584
+       dummy_age_hh |   36.44972   29.59567     1.23   0.219    -21.69776    94.59721
+      dummy_educ_hh |  -25.54518   18.29496    -1.40   0.163    -61.48982    10.39947
+ dummy_ethnicity_hh |   100.2291   37.28284     2.69   0.007     26.97845    173.4798
+       dummy_age_sp |   16.85102   27.95629     0.60   0.547    -38.07553    71.77756
+      dummy_educ_sp |  -2.846879   27.30663    -0.10   0.917    -56.49702    50.80326
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -28.01263   27.13075    -1.03   0.302    -81.31721    25.29194
+dummy_electricity97 |   169.3977   30.27413     5.60   0.000     109.9172    228.8782
+              _cons |   265.4689   21.29362    12.47   0.000     223.6327    307.3051
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,897    194.3125    124.3859   22.40478    1096.73
+
+added scalar:
+               e(mean) =  194.31248
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,897    194.3125    124.3859   22.40478    1096.73
+
+added scalar:
+             e(mean_p) =  194.31248
+
+added scalar:
+                 e(sd) =  124.38586
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,269           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,271
+                                                F(33, 499)        =      19.27
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1260
+                                                Root MSE          =        116
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   11.38729   4.836752     2.35   0.019     1.884377     20.8902
+           nbani197 |   .0360483   1.698455     0.02   0.983    -3.300956    3.373052
+           nbani297 |   3.387753    .988315     3.43   0.001     1.445981    5.329524
+               ha97 |   -.221387   .8046533    -0.28   0.783    -1.802313    1.359539
+      hhsize_ae2_97 |  -6.375702   .8992096    -7.09   0.000    -8.142405   -4.608998
+              no497 |  -.1419923   4.452428    -0.03   0.975    -8.889809    8.605824
+             big497 |   7.189851   4.869162     1.48   0.140    -2.376734    16.75644
+             age_hh |   .6193268   .5718097     1.08   0.279    -.5041246    1.742778
+            age_hh2 |   -.008956   .0052681    -1.70   0.090    -.0193064    .0013945
+          female_hh |   29.20886   6.131283     4.76   0.000     17.16255    41.25518
+           educ1_hh |  -14.02787   3.719302    -3.77   0.000     -21.3353    -6.72045
+       ethnicity_hh |  -29.88275   5.145383    -5.81   0.000    -39.99204   -19.77347
+             age_sp |   .7803624   .4033203     1.93   0.054    -.0120528    1.572778
+            age_sp2 |  -.0014448   .0036001    -0.40   0.688    -.0085181    .0056285
+           educ1_sp |  -20.67638   3.398887    -6.08   0.000    -27.35427   -13.99849
+         dage0_7_97 |   -20.5508   3.771669    -5.45   0.000    -27.96111    -13.1405
+        dage8_17_97 |   16.64562    3.07147     5.42   0.000     10.61101    22.68023
+       dage18_54_97 |  -.2304601   7.545622    -0.03   0.976    -15.05557    14.59464
+         dage55p_97 |  -3.345997   3.435247    -0.97   0.331    -10.09533    3.403334
+          homeown97 |    1.29923   4.962785     0.26   0.794      -8.4513    11.04976
+        dirtfloor97 |  -31.49252   4.071408    -7.74   0.000    -39.49174   -23.49331
+      electricity97 |   15.69412   4.548548     3.45   0.001     6.757454    24.63079
+         org_faenas |   7.508648   6.070465     1.24   0.217    -4.418172    19.43547
+           min_dist |  -.2640638   .0600962    -4.39   0.000    -.3821365   -.1459911
+       lnup_cwagepm |   3.152608   .8427915     3.74   0.000     1.496751    4.808466
+       up2_mcwagepm |  -20.90002   9.994303    -2.09   0.037    -40.53612   -1.263918
+       dummy_age_hh |   30.28707   29.02517     1.04   0.297    -26.73954    87.31368
+      dummy_educ_hh |  -26.06206   17.45516    -1.49   0.136    -60.35673    8.232617
+ dummy_ethnicity_hh |    95.7059   36.36234     2.63   0.009     24.26374    167.1481
+       dummy_age_sp |   18.50542   27.52866     0.67   0.502    -35.58095    72.59178
+      dummy_educ_sp |  -8.833837    26.9588    -0.33   0.743    -61.80059    44.13291
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   -22.7649   26.67558    -0.85   0.394     -75.1752    29.64539
+dummy_electricity97 |    170.816   32.95083     5.18   0.000     106.0766    235.5555
+              _cons |   243.7287   18.99016    12.83   0.000     206.4181    281.0392
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,912     191.429    119.1976   .4772817   825.9859
+
+added scalar:
+               e(mean) =  191.42896
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,912     191.429    119.1976   .4772817   825.9859
+
+added scalar:
+             e(mean_p) =  191.42896
+
+added scalar:
+                 e(sd) =  119.19756
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,271           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =     10,166
+                                                F(33, 499)        =      19.08
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1240
+                                                Root MSE          =     115.48
+
+                                      (Std. Err. adjusted for 500 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           t2_c1_op |   10.83634   4.832307     2.24   0.025     1.342163    20.33051
+           nbani197 |   .2379948   1.698291     0.14   0.889    -3.098687    3.574677
+           nbani297 |   3.438168   .9896848     3.47   0.001     1.493705    5.382631
+               ha97 |  -.2730041   .8025509    -0.34   0.734    -1.849799    1.303791
+      hhsize_ae2_97 |  -6.179905   .9165484    -6.74   0.000    -7.980674   -4.379135
+              no497 |   1.085243   4.512022     0.24   0.810    -7.779659    9.950144
+             big497 |    6.95862   4.825458     1.44   0.150      -2.5221    16.43934
+             age_hh |   .7025292     .57342     1.23   0.221    -.4240859    1.829144
+            age_hh2 |  -.0099408   .0052795    -1.88   0.060    -.0203137     .000432
+          female_hh |   28.17649   6.146205     4.58   0.000     16.10086    40.25212
+           educ1_hh |  -14.04889   3.734194    -3.76   0.000    -21.38557   -6.712208
+       ethnicity_hh |   -29.6915   5.127286    -5.79   0.000    -39.76523   -19.61777
+             age_sp |   .7487252   .4031718     1.86   0.064    -.0433983    1.540849
+            age_sp2 |  -.0008526   .0036046    -0.24   0.813    -.0079347    .0062295
+           educ1_sp |  -20.88502   3.378223    -6.18   0.000    -27.52232   -14.24773
+         dage0_7_97 |  -20.87082   3.741907    -5.58   0.000    -28.22265   -13.51899
+        dage8_17_97 |    16.3706   3.053788     5.36   0.000     10.37074    22.37047
+       dage18_54_97 |  -3.219529   7.712168    -0.42   0.677    -18.37185    11.93279
+         dage55p_97 |  -2.937272   3.384102    -0.87   0.386    -9.586116    3.711573
+          homeown97 |   1.286654   4.952931     0.26   0.795    -8.444516    11.01782
+        dirtfloor97 |  -30.54875    4.11342    -7.43   0.000     -38.6305   -22.46699
+      electricity97 |   15.02415   4.543082     3.31   0.001     6.098227    23.95008
+         org_faenas |   7.758002   6.175353     1.26   0.210    -4.374895     19.8909
+           min_dist |  -.2556581   .0605242    -4.22   0.000    -.3745717   -.1367445
+       lnup_cwagepm |   2.969595   .8421861     3.53   0.000     1.314927    4.624263
+       up2_mcwagepm |   -21.6765   10.09914    -2.15   0.032    -41.51859   -1.834421
+       dummy_age_hh |     41.261   28.61554     1.44   0.150     -14.9608     97.4828
+      dummy_educ_hh |  -26.76971   17.26064    -1.55   0.122    -60.68221    7.142777
+ dummy_ethnicity_hh |   94.44654   36.10854     2.62   0.009     23.50303      165.39
+       dummy_age_sp |   17.97877   27.60907     0.65   0.515    -36.26558    72.22312
+      dummy_educ_sp |  -6.937665   27.01907    -0.26   0.797    -60.02283    46.14751
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -23.93444   26.76296    -0.89   0.372    -76.51642    28.64754
+dummy_electricity97 |   168.1055   33.10655     5.08   0.000     103.0601     233.151
+              _cons |    245.582   19.07488    12.87   0.000     208.1051     283.059
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,860    193.7149    118.3447   31.50829   825.9859
+
+added scalar:
+               e(mean) =  193.71492
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      3,860    193.7149    118.3447   31.50829   825.9859
+
+added scalar:
+             e(mean_p) =  193.71492
+
+added scalar:
+                 e(sd) =  118.34466
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |     10,166           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+
+. ***Output for Appendix Table A4;
+. estout consumo_pp_ae2_notrim consumo_pp_ae2_top5 consumo_pp_ae2_tb5 consumo_pp_ae2_top1 consumo_pp_ae2_tb1 foodexp_pp_ae2 n
+> onfoodexp_pp_ae2 
+>         using "$out_p/consumo_w7.text", stats(N mean mean_p sd prop, fmt(%9.0fc %9.3fc %9.3fc %9.3fc %9.3fc) 
+>         labels("Number Observations" "Mean Dep Var (Control Households)" "Mean Dep Var | y >0(Control Households)" "SD Dep 
+> Var (Control Households)"
+>          "Prop Dep Var >0")) keep(t2_c1_op) cells(b(fmt(%9.3f) star) se(fmt(%9.3f) par(( ))))
+>         starl(+ 0.1 * 0.05 ** 0.01) legend label collabels(none) title(ITT Eligibles - Consumption by Type & Outliers) appe
+> nd;
+(output written to C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output/consumo_w7.text)
+
+. estimates clear;
+
+. *==================================================================================
+> ITT results: wave 7 - Ineligibles -- Consumption & Other Income Sources (Table A8)
+>                 Trim top & bottom 1% consumption distribution, top 2% of distrib of other vars (5% for wages).
+> *===================================================================================;
+. preserve;
+
+. keep if ineligible ==1;
+(16,618 observations deleted)
+
+. count if witransfer_act_m >0 & witransfer_act_m ~=.;
+  4
+
+. replace witransfer_act_m =0 if witransfer_act_m >0 &  witransfer_act_m ~=.;
+(4 real changes made)
+
+.  *ineligible are not receiving transfers;
+. foreach x in consumo_pp_ae2 foodexp_pp_ae2 nonfoodexp_pp_ae2 {;
+  2.         reg `x' treatcom $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_tr >2 & consumo_pp_ae2_tl_tr <199, cl(comui
+> d);
+  3.         sum `x' if e(sample) & treatcom ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & treatcom ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,853
+                                                F(32, 429)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0956
+                                                Root MSE          =     179.65
+
+                                      (Std. Err. adjusted for 430 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     consumo_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |  -1.618571   9.454078    -0.17   0.864    -20.20065     16.9635
+           nbani197 |  -1.503141   2.608963    -0.58   0.565     -6.63108    3.624799
+           nbani297 |   2.940082   1.010506     2.91   0.004     .9539233     4.92624
+               ha97 |  -.8763267   1.314493    -0.67   0.505    -3.459975    1.707321
+      hhsize_ae2_97 |  -11.45525    2.21979    -5.16   0.000    -15.81827   -7.092232
+              no497 |   19.30419   14.45237     1.34   0.182    -9.102078    47.71045
+             big497 |   9.901492   9.544349     1.04   0.300    -8.858012      28.661
+             age_hh |   .2300356   1.724937     0.13   0.894    -3.160343    3.620415
+            age_hh2 |   .0016239   .0148346     0.11   0.913    -.0275337    .0307815
+          female_hh |   19.16371   12.07022     1.59   0.113    -4.560418    42.88784
+           educ1_hh |  -44.03726   10.89678    -4.04   0.000    -65.45498   -22.61955
+       ethnicity_hh |  -27.37957    12.8327    -2.13   0.033    -52.60236   -2.156783
+             age_sp |   .5983028    .809845     0.74   0.460    -.9934549    2.190061
+            age_sp2 |     .00278   .0069219     0.40   0.688    -.0108251    .0163851
+           educ1_sp |  -35.11397   9.749523    -3.60   0.000    -54.27675   -15.95119
+         dage0_7_97 |   -8.19456   7.276822    -1.13   0.261    -22.49722    6.108101
+        dage8_17_97 |   31.50119   7.011825     4.49   0.000     17.71939      45.283
+       dage18_54_97 |  -13.04568     13.939    -0.94   0.350    -40.44291    14.35156
+         dage55p_97 |  -19.25857   7.896447    -2.44   0.015    -34.77911    -3.73803
+          homeown97 |   11.84824   17.86146     0.66   0.507    -23.25862     46.9551
+        dirtfloor97 |  -36.31602   7.397481    -4.91   0.000    -50.85583    -21.7762
+      electricity97 |   24.99816   11.89503     2.10   0.036     1.618376    48.37795
+         org_faenas |  -12.09877   15.98601    -0.76   0.450    -43.51943    19.32188
+           min_dist |  -.0612234   .1088588    -0.56   0.574    -.2751865    .1527396
+       lnup_cwagepm |   7.932163   1.560291     5.08   0.000     4.865397    10.99893
+       up2_mcwagepm |   8.661359   20.78781     0.42   0.677    -32.19727    49.51998
+       dummy_age_hh |  -133.6186   66.44464    -2.01   0.045    -264.2162   -3.021068
+      dummy_educ_hh |   76.28856     45.656     1.67   0.095    -13.44872    166.0258
+ dummy_ethnicity_hh |   263.4927   85.26726     3.09   0.002     95.89908    431.0862
+       dummy_age_sp |   69.64455   42.41711     1.64   0.101    -13.72667    153.0158
+      dummy_educ_sp |  -33.68115   41.13154    -0.82   0.413    -114.5256    47.16327
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -29.20215   56.02879    -0.52   0.602    -139.3272    80.92294
+dummy_electricity97 |   202.0706   19.61109    10.30   0.000     163.5248    240.6164
+              _cons |   294.3945    50.3501     5.85   0.000     195.4309    393.3581
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      1,470    285.5214    192.0087   39.94692   1211.612
+
+added scalar:
+               e(mean) =  285.5214
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+consumo_p~e2 |      1,470    285.5214    192.0087   39.94692   1211.612
+
+added scalar:
+             e(mean_p) =  285.5214
+
+added scalar:
+                 e(sd) =  192.00868
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dconsumo_p~2 |      3,853           1           0          1          1
+
+added scalar:
+               e(prop) =  1
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,853
+                                                F(32, 429)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0229
+                                                Root MSE          =      351.1
+
+                                      (Std. Err. adjusted for 430 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+     foodexp_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |   6.178501   11.17282     0.55   0.581    -15.78179    28.13879
+           nbani197 |  -3.155144   2.383973    -1.32   0.186    -7.840864    1.530576
+           nbani297 |  -.5751985   1.873389    -0.31   0.759    -4.257361    3.106964
+               ha97 |   5.100434   3.884789     1.31   0.190    -2.535154    12.73602
+      hhsize_ae2_97 |  -4.200978   1.774156    -2.37   0.018    -7.688098   -.7138588
+              no497 |   16.02814   17.28453     0.93   0.354    -17.94476    50.00105
+             big497 |  -7.440326   13.26625    -0.56   0.575    -33.51526    18.63461
+             age_hh |  -2.261588   2.367774    -0.96   0.340     -6.91547    2.392294
+            age_hh2 |   .0260833   .0237403     1.10   0.273    -.0205786    .0727451
+          female_hh |   60.03127   59.55072     1.01   0.314    -57.01622    177.0788
+           educ1_hh |  -4.116933   8.312946    -0.50   0.621     -20.4561    12.22224
+       ethnicity_hh |  -26.67432   9.754369    -2.73   0.007    -45.84662   -7.502016
+             age_sp |   .7678453   .7934933     0.97   0.334     -.791773    2.327464
+            age_sp2 |   -.007699     .00656    -1.17   0.241    -.0205928    .0051948
+           educ1_sp |  -24.65444   13.70365    -1.80   0.073     -51.5891    2.280219
+         dage0_7_97 |  -2.964958   10.54824    -0.28   0.779    -23.69761     17.7677
+        dage8_17_97 |  -8.337881   10.74487    -0.78   0.438    -29.45702    12.78126
+       dage18_54_97 |  -91.78889   46.38465    -1.98   0.048    -182.9583    -.619431
+         dage55p_97 |  -22.69498   10.51241    -2.16   0.031    -43.35722   -2.032733
+          homeown97 |   22.52576   10.71021     2.10   0.036     1.474745    43.57677
+        dirtfloor97 |  -7.291354   11.35878    -0.64   0.521    -29.61715    15.03444
+      electricity97 |   9.242341    16.1746     0.57   0.568    -22.54898    41.03366
+         org_faenas |   12.81878   10.04185     1.28   0.202    -6.918569    32.55614
+           min_dist |    .331277   .1604741     2.06   0.040     .0158637    .6466903
+       lnup_cwagepm |    5.04974   1.825794     2.77   0.006     1.461125    8.638354
+       up2_mcwagepm |   30.06288   26.73529     1.12   0.261    -22.48559    82.61134
+       dummy_age_hh |  -66.28859   75.21022    -0.88   0.379     -214.115    81.53778
+      dummy_educ_hh |   53.63026   43.13788     1.24   0.214    -31.15763    138.4182
+ dummy_ethnicity_hh |   185.3624   84.33489     2.20   0.028     19.60144    351.1234
+       dummy_age_sp |   26.20527   51.76519     0.51   0.613    -75.53969    127.9502
+      dummy_educ_sp |  -26.14357   42.63027    -0.61   0.540    -109.9338    57.64663
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -44.20577   34.40873    -1.28   0.200    -111.8364    23.42491
+dummy_electricity97 |    43.5571   56.18079     0.78   0.439    -66.86676     153.981
+              _cons |    212.262   63.47975     3.34   0.001     87.49197     337.032
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+foodexp_p~e2 |      1,470    157.9354    199.9958          0   3401.279
+
+added scalar:
+               e(mean) =  157.93544
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+foodexp_p~e2 |      1,460    159.0172    200.2507   1.386846   3401.279
+
+added scalar:
+             e(mean_p) =  159.01719
+
+added scalar:
+                 e(sd) =  200.25072
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dfoodexp_p~2 |      3,853    .9935115    .0802996          0          1
+
+added scalar:
+               e(prop) =  .99351155
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,853
+                                                F(32, 429)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0823
+                                                Root MSE          =     118.73
+
+                                      (Std. Err. adjusted for 430 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+  nonfoodexp_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |  -1.844054   5.929082    -0.31   0.756    -13.49772    9.809612
+           nbani197 |   -1.71881   1.695241    -1.01   0.311    -5.050822    1.613202
+           nbani297 |   1.508044    .611768     2.47   0.014      .305608    2.710479
+               ha97 |  -.8209359   .6650451    -1.23   0.218    -2.128088    .4862164
+      hhsize_ae2_97 |  -5.362626   1.419439    -3.78   0.000    -8.152546   -2.572707
+              no497 |   12.77106   9.814641     1.30   0.194    -6.519709    32.06182
+             big497 |   3.082231    5.72088     0.54   0.590    -8.162211    14.32667
+             age_hh |   .3992254   1.028944     0.39   0.698    -1.623174    2.421625
+            age_hh2 |  -.0024237   .0089703    -0.27   0.787     -.020055    .0152075
+          female_hh |   14.28055    7.44227     1.92   0.056    -.3472996     28.9084
+           educ1_hh |  -34.04974   7.403473    -4.60   0.000    -48.60133   -19.49814
+       ethnicity_hh |  -6.847463   8.991706    -0.76   0.447    -24.52074    10.82582
+             age_sp |   .1897132    .519249     0.37   0.715    -.8308755    1.210302
+            age_sp2 |   .0058996   .0042065     1.40   0.161    -.0023683    .0141674
+           educ1_sp |  -22.26764   6.026442    -3.69   0.000    -34.11267   -10.42261
+         dage0_7_97 |   .6171106   5.078669     0.12   0.903     -9.36506    10.59928
+        dage8_17_97 |   24.20662   5.011579     4.83   0.000     14.35631    34.05692
+       dage18_54_97 |  -3.293526   9.527119    -0.35   0.730    -22.01917    15.43211
+         dage55p_97 |  -10.53413   4.736688    -2.22   0.027    -19.84414    -1.22413
+          homeown97 |  -.3617011   12.10842    -0.03   0.976    -24.16091    23.43751
+        dirtfloor97 |  -28.03137   4.878007    -5.75   0.000    -37.61914   -18.44361
+      electricity97 |   20.49914   7.082241     2.89   0.004     6.578927    34.41935
+         org_faenas |  -3.381304   9.502863    -0.36   0.722    -22.05927    15.29666
+           min_dist |  -.2074038   .0657609    -3.15   0.002    -.3366575   -.0781501
+       lnup_cwagepm |   3.769076   .9570388     3.94   0.000     1.888008    5.650145
+       up2_mcwagepm |  -4.359001   12.18183    -0.36   0.721    -28.30251    19.58451
+       dummy_age_hh |  -50.62196   30.54369    -1.66   0.098    -110.6559    9.411939
+      dummy_educ_hh |   56.34342   31.93386     1.76   0.078     -6.42287    119.1097
+ dummy_ethnicity_hh |   83.77985   40.75053     2.06   0.040     3.684308    163.8754
+       dummy_age_sp |   17.57246   21.17137     0.83   0.407    -24.04005    59.18497
+      dummy_educ_sp |  -9.368159   20.83856    -0.45   0.653    -50.32653    31.59021
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   11.56053   44.24377     0.26   0.794      -75.401    98.52206
+dummy_electricity97 |  -13.64049   13.28845    -1.03   0.305    -39.75906    12.47809
+              _cons |   137.2653   32.33171     4.25   0.000     73.71704    200.8136
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+nonfoodex~e2 |      1,470    123.0416    131.0898          0   959.6308
+
+added scalar:
+               e(mean) =  123.04164
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+nonfoodex~e2 |      1,456    124.2247    131.1595   1.395764   959.6308
+
+added scalar:
+             e(mean_p) =  124.22473
+
+added scalar:
+                 e(sd) =  131.15955
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dnonfoodex~2 |      3,853    .9919543    .0893477          0          1
+
+added scalar:
+               e(prop) =  .99195432
+
+. foreach x in homeprod_pp_ae2 amount_p_pp_ae2 amount_t_pr_pp_ae2 amount_borrowed_m_pp_ae2 {;
+  2.         reg `x' treatcom $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_tr >2 & consumo_pp_ae2_tl_tr <199 & `x'_tl_
+> tr <=196, cl(comuid);
+  3.         sum `x' if e(sample) & treatcom ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & treatcom ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,782
+                                                F(32, 429)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0452
+                                                Root MSE          =     23.103
+
+                                      (Std. Err. adjusted for 430 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+    homeprod_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |   1.703598   1.310907     1.30   0.194    -.8730025    4.280198
+           nbani197 |   1.482662   .4301735     3.45   0.001      .637152    2.328172
+           nbani297 |   .5126044   .1240377     4.13   0.000     .2688072    .7564016
+               ha97 |  -.2069656   .1415404    -1.46   0.144    -.4851646    .0712334
+      hhsize_ae2_97 |  -.3799691   .2675025    -1.42   0.156    -.9057478    .1458096
+              no497 |  -3.629221   1.334569    -2.72   0.007    -6.252329   -1.006114
+             big497 |   2.099497   1.178914     1.78   0.076    -.2176691    4.416664
+             age_hh |   .3617012   .1353926     2.67   0.008     .0955858    .6278165
+            age_hh2 |  -.0029957   .0012423    -2.41   0.016    -.0054374   -.0005539
+          female_hh |   .9707365   1.337119     0.73   0.468    -1.657384    3.598857
+           educ1_hh |   .3676368   1.126375     0.33   0.744    -1.846264    2.581538
+       ethnicity_hh |  -1.013439   1.635729    -0.62   0.536     -4.22848    2.201602
+             age_sp |   .0138953   .0710133     0.20   0.845    -.1256819    .1534725
+            age_sp2 |  -.0000111   .0005101    -0.02   0.983    -.0010137    .0009915
+           educ1_sp |   2.042108   1.169648     1.75   0.082    -.2568464    4.341062
+         dage0_7_97 |  -.2183087   .9665455    -0.23   0.821    -2.118063    1.681445
+        dage8_17_97 |  -.2164879    .902176    -0.24   0.810    -1.989723    1.556747
+       dage18_54_97 |   -.446534    1.63857    -0.27   0.785    -3.667158     2.77409
+         dage55p_97 |   .8318648   .9896972     0.84   0.401    -1.113394    2.777124
+          homeown97 |   2.156811   2.035413     1.06   0.290    -1.843812    6.157435
+        dirtfloor97 |  -.3024702    .936249    -0.32   0.747    -2.142676    1.537736
+      electricity97 |  -1.916366   1.662569    -1.15   0.250     -5.18416    1.351427
+         org_faenas |  -2.567236   3.211741    -0.80   0.425    -8.879943    3.745471
+           min_dist |  -.0138636   .0167049    -0.83   0.407    -.0466973    .0189701
+       lnup_cwagepm |  -.0352258   .2262159    -0.16   0.876    -.4798553    .4094036
+       up2_mcwagepm |   1.742523   3.070222     0.57   0.571    -4.292026    7.777072
+       dummy_age_hh |   5.281823   8.528859     0.62   0.536    -11.48173    22.04537
+      dummy_educ_hh |  -5.361188   3.130744    -1.71   0.088    -11.51469     .792318
+ dummy_ethnicity_hh |   4.755371   8.865522     0.54   0.592    -12.66989    22.18064
+       dummy_age_sp |  -.9482906   3.200181    -0.30   0.767    -7.238276    5.341695
+      dummy_educ_sp |  -2.003104   3.143024    -0.64   0.524    -8.180745    4.174538
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   1.893719   7.956588     0.24   0.812    -13.74503    17.53247
+dummy_electricity97 |   83.02497   2.952071    28.12   0.000     77.22264    88.82729
+              _cons |   4.947023   5.437013     0.91   0.363    -5.739475    15.63352
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+homeprod_~e2 |      1,447    13.70631    22.10537          0    117.612
+
+added scalar:
+               e(mean) =  13.706307
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+homeprod_~e2 |        675    29.38226    24.22945   .5819552    117.612
+
+added scalar:
+             e(mean_p) =  29.382262
+
+added scalar:
+                 e(sd) =  24.229449
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dhomeprod_~2 |      3,782    .4822845    .4997521          0          1
+
+added scalar:
+               e(prop) =  .48228451
+note: dummy_dage0_7_97 omitted because of collinearity
+note: dummy_electricity97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,370
+                                                F(32, 427)        =       6.96
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1199
+                                                Root MSE          =     24.056
+
+                                      (Std. Err. adjusted for 428 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+    amount_p_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |  -1.113916   1.420276    -0.78   0.433    -3.905519    1.677686
+           nbani197 |   1.710223   .5079632     3.37   0.001     .7118032    2.708642
+           nbani297 |   .4649066   .1749692     2.66   0.008     .1209985    .8088147
+               ha97 |   .1023598   .2660381     0.38   0.701    -.4205474     .625267
+      hhsize_ae2_97 |  -.5003772   .2852711    -1.75   0.080    -1.061088    .0603332
+              no497 |   -2.20013   1.326245    -1.66   0.098    -4.806911    .4066512
+             big497 |     9.8694   1.819587     5.42   0.000     6.292938    13.44586
+             age_hh |  -.1208008   .2129915    -0.57   0.571    -.5394431    .2978414
+            age_hh2 |      .0014   .0019848     0.71   0.481    -.0025011    .0053012
+          female_hh |  -3.177134   1.673221    -1.90   0.058    -6.465908    .1116402
+           educ1_hh |   .4933804   1.125951     0.44   0.661    -1.719715    2.706476
+       ethnicity_hh |   -3.62361   1.270401    -2.85   0.005    -6.120628   -1.126593
+             age_sp |   .1034664   .0953348     1.09   0.278    -.0839175    .2908503
+            age_sp2 |   .0005598   .0007069     0.79   0.429    -.0008297    .0019493
+           educ1_sp |  -1.611676   1.184274    -1.36   0.174    -3.939407    .7160552
+         dage0_7_97 |  -1.650833   .9918471    -1.66   0.097    -3.600343    .2986775
+        dage8_17_97 |   .0249232   1.030213     0.02   0.981    -1.999998    2.049844
+       dage18_54_97 |  -4.614423   2.290242    -2.01   0.045    -9.115975   -.1128719
+         dage55p_97 |  -.5732164   1.080927    -0.53   0.596    -2.697817    1.551385
+          homeown97 |   3.246101    1.31877     2.46   0.014     .6540118     5.83819
+        dirtfloor97 |    -.57563   1.023861    -0.56   0.574    -2.588064    1.436804
+      electricity97 |  -1.191337   1.707986    -0.70   0.486    -4.548444    2.165769
+         org_faenas |  -2.054739   3.147715    -0.65   0.514    -8.241684    4.132205
+           min_dist |   .0094332   .0169016     0.56   0.577    -.0237875    .0426538
+       lnup_cwagepm |   .1567383   .2229251     0.70   0.482    -.2814288    .5949054
+       up2_mcwagepm |  -1.577881    2.64144    -0.60   0.551    -6.769724    3.613962
+       dummy_age_hh |   -3.54645     5.0232    -0.71   0.481    -13.41973    6.326827
+      dummy_educ_hh |  -.7404975   3.841155    -0.19   0.847    -8.290422    6.809427
+ dummy_ethnicity_hh |  -5.100295   4.135865    -1.23   0.218    -13.22948    3.028892
+       dummy_age_sp |   5.269657   3.465818     1.52   0.129    -1.542531    12.08184
+      dummy_educ_sp |  -1.849518   3.325806    -0.56   0.578    -8.386507     4.68747
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -4.581062   4.981444    -0.92   0.358    -14.37227    5.210142
+dummy_electricity97 |          0  (omitted)
+              _cons |   9.360364   6.502331     1.44   0.151    -3.420196    22.14092
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_p_~e2 |      1,318    13.06897    26.30725          0   165.0491
+
+added scalar:
+               e(mean) =  13.068969
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_p_~e2 |        461    37.36421     32.7366   1.977741   165.0491
+
+added scalar:
+             e(mean_p) =  37.364211
+
+added scalar:
+                 e(sd) =  32.736604
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+damount_p_~2 |      3,370    .3495549    .4769002          0          1
+
+added scalar:
+               e(prop) =  .3495549
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,512
+                                                F(32, 426)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0472
+                                                Root MSE          =     25.185
+
+                                      (Std. Err. adjusted for 427 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+ amount_t_pr_pp_ae2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |   .7584407   1.287457     0.59   0.556    -1.772119       3.289
+           nbani197 |   .8814595   .3941846     2.24   0.026     .1066706    1.656248
+           nbani297 |   .0999525   .1242614     0.80   0.422    -.1442893    .3441943
+               ha97 |  -.4822866   .1247071    -3.87   0.000    -.7274044   -.2371688
+      hhsize_ae2_97 |  -.3771559   .3225387    -1.17   0.243    -1.011121    .2568094
+              no497 |    .405001   1.737088     0.23   0.816    -3.009329    3.819331
+             big497 |   1.706861   1.437417     1.19   0.236    -1.118451    4.532173
+             age_hh |  -.0335999   .1745166    -0.19   0.847    -.3766208    .3094209
+            age_hh2 |   .0014599   .0015645     0.93   0.351    -.0016153     .004535
+          female_hh |   7.752314   2.117304     3.66   0.000     3.590651    11.91398
+           educ1_hh |   1.032729   1.147432     0.90   0.369    -1.222604    3.288063
+       ethnicity_hh |    -1.4302   1.867158    -0.77   0.444    -5.100189    2.239789
+             age_sp |  -.0333619   .0932548    -0.36   0.721    -.2166588    .1499349
+            age_sp2 |   .0008816   .0008196     1.08   0.283    -.0007294    .0024925
+           educ1_sp |   2.075051   1.240268     1.67   0.095    -.3627554    4.512858
+         dage0_7_97 |  -.5130188   1.281501    -0.40   0.689    -3.031871    2.005834
+        dage8_17_97 |   2.400702    1.05898     2.27   0.024     .3192259    4.482177
+       dage18_54_97 |   .6329967   1.758749     0.36   0.719     -2.82391    4.089903
+         dage55p_97 |  -.7049289   1.187064    -0.59   0.553     -3.03816    1.628302
+          homeown97 |   2.961296   1.500719     1.97   0.049     .0115599    5.911032
+        dirtfloor97 |  -2.166693   1.089014    -1.99   0.047    -4.307203   -.0261824
+      electricity97 |   1.584302   1.394472     1.14   0.257    -1.156599    4.325203
+         org_faenas |    .927905   2.088611     0.44   0.657     -3.17736     5.03317
+           min_dist |   .0077265    .013823     0.56   0.576    -.0194434    .0348964
+       lnup_cwagepm |   .6353983   .2053403     3.09   0.002     .2317921    1.039005
+       up2_mcwagepm |  -2.850186   1.344957    -2.12   0.035    -5.493763   -.2066086
+       dummy_age_hh |  -36.64944    27.4715    -1.33   0.183    -90.64601    17.34712
+      dummy_educ_hh |    8.69657   8.399801     1.04   0.301    -7.813644    25.20678
+ dummy_ethnicity_hh |    28.9346   33.05214     0.88   0.382    -36.03097    93.90017
+       dummy_age_sp |  -3.359272   3.576873    -0.94   0.348    -10.38979    3.671246
+      dummy_educ_sp |   3.353529   3.807618     0.88   0.379    -4.130529    10.83759
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -8.139843   2.291789    -3.55   0.000    -12.64447   -3.635221
+dummy_electricity97 |  -8.513169   2.669887    -3.19   0.002    -13.76096   -3.265377
+              _cons |  -5.718446   5.517396    -1.04   0.301    -16.56315    5.126262
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~r_pp_ae2 |      1,371    8.571205    24.58817          0   165.7944
+
+added scalar:
+               e(mean) =  8.5712055
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amo~r_pp_ae2 |        306    38.40236    39.57654   .8857482   165.7944
+
+added scalar:
+             e(mean_p) =  38.402362
+
+added scalar:
+                 e(sd) =  39.576536
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+dam~r_pp_ae2 |      3,512    .2183941    .4132151          0          1
+
+added scalar:
+               e(prop) =  .21839408
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,480
+                                                F(32, 426)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0208
+                                                Root MSE          =     11.924
+
+                                      (Std. Err. adjusted for 427 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+amount_borrowed_~e2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |  -.4096901   .5028446    -0.81   0.416    -1.398056    .5786753
+           nbani197 |   .4602806   .2973582     1.55   0.122    -.1241913    1.044753
+           nbani297 |   .0159015   .0518445     0.31   0.759    -.0860015    .1178045
+               ha97 |  -.1111259   .0552053    -2.01   0.045    -.2196346   -.0026172
+      hhsize_ae2_97 |   .1089585    .139019     0.78   0.434      -.16429    .3822069
+              no497 |   .0566423   .9300445     0.06   0.951    -1.771405     1.88469
+             big497 |   1.127533   .5436122     2.07   0.039     .0590366    2.196029
+             age_hh |   .1258182    .073717     1.71   0.089    -.0190761    .2707126
+            age_hh2 |  -.0009483   .0006791    -1.40   0.163     -.002283    .0003865
+          female_hh |   .2026451   .7359299     0.28   0.783    -1.243861    1.649151
+           educ1_hh |   .4753425   .5819388     0.82   0.414    -.6684863    1.619171
+       ethnicity_hh |  -.6535039    .469099    -1.39   0.164    -1.575541    .2685328
+             age_sp |  -.0496995   .0442624    -1.12   0.262    -.1366994    .0373005
+            age_sp2 |   .0002432   .0003268     0.74   0.457    -.0003992    .0008856
+           educ1_sp |  -2.963159   .7243986    -4.09   0.000    -4.386999   -1.539318
+         dage0_7_97 |  -.4116984   .4774915    -0.86   0.389    -1.350231    .5268343
+        dage8_17_97 |  -.0120105   .5453802    -0.02   0.982    -1.083982    1.059961
+       dage18_54_97 |   .6517726   .7031715     0.93   0.355    -.7303449     2.03389
+         dage55p_97 |  -.3192031   .5805886    -0.55   0.583    -1.460378    .8219719
+          homeown97 |  -2.121778    1.79878    -1.18   0.239    -5.657367    1.413811
+        dirtfloor97 |  -.3749076   .4552634    -0.82   0.411     -1.26975    .5199346
+      electricity97 |   .9546278   .5161657     1.85   0.065    -.0599207    1.969176
+         org_faenas |  -.8007792   1.110367    -0.72   0.471    -2.983259      1.3817
+           min_dist |  -.0106372    .005271    -2.02   0.044    -.0209976   -.0002769
+       lnup_cwagepm |  -.1004894   .0750408    -1.34   0.181    -.2479857    .0470068
+       up2_mcwagepm |  -1.923834   .6170489    -3.12   0.002    -3.136674   -.7109946
+       dummy_age_hh |   .9686834   1.912615     0.51   0.613    -2.790654    4.728021
+      dummy_educ_hh |  -.6269472   2.083092    -0.30   0.764    -4.721366    3.467472
+ dummy_ethnicity_hh |  -.0220175   2.073831    -0.01   0.992    -4.098233    4.054198
+       dummy_age_sp |   .5414327   1.197367     0.45   0.651    -1.812051    2.894916
+      dummy_educ_sp |   .2649841   1.135604     0.23   0.816      -1.9671    2.497068
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |   3.991693   5.295003     0.75   0.451    -6.415892    14.39928
+dummy_electricity97 |   1.218938   .9358259     1.30   0.193    -.6204731    3.058349
+              _cons |   5.184577   2.750207     1.89   0.060    -.2210886    10.59024
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_bo~e2 |      1,345    3.065038    12.75845          0   101.5068
+
+added scalar:
+               e(mean) =  3.065038
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+amount_bo~e2 |        134    30.76475    28.04162   .5075338   101.5068
+
+added scalar:
+             e(mean_p) =  30.764748
+
+added scalar:
+                 e(sd) =  28.041622
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+damount_bo~2 |      3,480    .0902299     .286552          0          1
+
+added scalar:
+               e(prop) =  .09022989
+
+. foreach x in outwage_lw_hh_pp_ae2 {;
+  2.         reg `x' treatcom $basic hhsize_ae2_97 $controls if consumo_pp_ae2_tl_tr >2 & consumo_pp_ae2_tl_tr <199 & `x'_tl_
+> tr <=190, cl(comuid);
+  3.         sum `x' if e(sample) & treatcom ==0;
+  4.         scalar mean =r(mean);
+  5.         estadd scalar mean;
+  6.         sum `x' if e(sample) & treatcom ==0 & `x'>0;
+  7.         scalar mean_p =r(mean);
+  8.         estadd scalar mean_p;
+  9.         scalar sd =r(sd);
+ 10.         estadd scalar sd;
+ 11.         sum d`x' if e(sample);
+ 12.         scalar prop =r(mean);
+ 13.         estadd scalar prop;
+ 14.         est store `x', title (`x');
+ 15. };
+note: dummy_dage0_7_97 omitted because of collinearity
+
+Linear regression                               Number of obs     =      3,140
+                                                F(32, 415)        =          .
+                                                Prob > F          =          .
+                                                R-squared         =     0.0636
+                                                Root MSE          =     206.08
+
+                                      (Std. Err. adjusted for 416 clusters in comuid)
+-------------------------------------------------------------------------------------
+                    |               Robust
+outwage_lw_hh_pp~e2 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+--------------------+----------------------------------------------------------------
+           treatcom |   3.174547   9.467987     0.34   0.738    -15.43664    21.78574
+           nbani197 |  -3.387694   3.063955    -1.11   0.270    -9.410501    2.635113
+           nbani297 |  -2.295318   .9284514    -2.47   0.014    -4.120372   -.4702642
+               ha97 |  -3.059083   1.186331    -2.58   0.010     -5.39105   -.7271152
+      hhsize_ae2_97 |   6.219957   2.677568     2.32   0.021     .9566706    11.48324
+              no497 |   13.70098   18.04447     0.76   0.448    -21.76898    49.17094
+             big497 |  -21.59815   11.34613    -1.90   0.058     -43.9012    .7048905
+             age_hh |   -.332288   1.882279    -0.18   0.860    -4.032278    3.367702
+            age_hh2 |  -.0087834   .0166583    -0.53   0.598    -.0415285    .0239617
+          female_hh |  -45.34036   18.44342    -2.46   0.014    -81.59452   -9.086193
+           educ1_hh |   15.12203    10.7465     1.41   0.160    -6.002329    36.24638
+       ethnicity_hh |  -5.980904   12.73369    -0.47   0.639    -31.01148    19.04967
+             age_sp |    2.62723   .8611307     3.05   0.002     .9345086    4.319952
+            age_sp2 |  -.0242109   .0073485    -3.29   0.001    -.0386558    -.009766
+           educ1_sp |   13.60529   10.14049     1.34   0.180    -6.327833    33.53841
+         dage0_7_97 |   -13.9415    8.61047    -1.62   0.106    -30.86708    2.984069
+        dage8_17_97 |   5.303164   9.125902     0.58   0.561    -12.63559    23.24192
+       dage18_54_97 |    39.9537   13.32792     3.00   0.003     13.75506    66.15234
+         dage55p_97 |  -22.30023   10.30142    -2.16   0.031    -42.54969   -2.050765
+          homeown97 |  -69.11481   26.37908    -2.62   0.009    -120.9681   -17.26154
+        dirtfloor97 |   12.80854   8.884561     1.44   0.150    -4.655816    30.27289
+      electricity97 |  -10.12573   13.67883    -0.74   0.460    -37.01416     16.7627
+         org_faenas |  -24.62751   15.94988    -1.54   0.123    -55.98014    6.725125
+           min_dist |  -.3005286   .1240051    -2.42   0.016     -.544285   -.0567721
+       lnup_cwagepm |   2.217297   1.595521     1.39   0.165    -.9190142    5.353608
+       up2_mcwagepm |  -15.97025   32.02436    -0.50   0.618    -78.92044    46.97994
+       dummy_age_hh |  -109.5319   52.45967    -2.09   0.037    -212.6517   -6.412086
+      dummy_educ_hh |   16.72817   57.30497     0.29   0.770    -95.91603    129.3724
+ dummy_ethnicity_hh |   33.03096   71.47294     0.46   0.644    -107.4632    173.5251
+       dummy_age_sp |   215.5713     40.624     5.31   0.000     135.7168    295.4258
+      dummy_educ_sp |  -183.7764   37.23066    -4.94   0.000    -256.9606   -110.5922
+   dummy_dage0_7_97 |          0  (omitted)
+  dummy_dirtfloor97 |  -145.4704   29.63698    -4.91   0.000    -203.7278   -87.21313
+dummy_electricity97 |  -85.20595   20.59221    -4.14   0.000     -125.684   -44.72791
+              _cons |   226.3802   57.97513     3.90   0.000     112.4186    340.3417
+-------------------------------------------------------------------------------------
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+outwage_l~e2 |      1,210    172.1613     208.341          0    780.232
+
+added scalar:
+               e(mean) =  172.16129
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+outwage_l~e2 |        628     331.712    175.1782   10.57225    780.232
+
+added scalar:
+             e(mean_p) =  331.71204
+
+added scalar:
+                 e(sd) =  175.17821
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+doutwage_l~2 |      3,140    .5213376    .4996241          0          1
+
+added scalar:
+               e(prop) =  .52133758
+
+. ***Output for Appendix Table A8;
+. estout consumo_pp_ae2 homeprod_pp_ae2 amount_p_pp_ae2 amount_t_pr_pp_ae2 amount_borrowed_m_pp_ae2 outwage_lw_hh_pp_ae2 
+>         using "$out_p/consumo_w7.text", stats(N mean mean_p sd prop, fmt(%9.0fc %9.3fc %9.3fc %9.3fc %9.3fc) 
+>         labels("Number Observations" "Mean Dep Var (Control Households)" "Mean Dep Var | y >0(Control Households)" "SD Dep 
+> Var (Control Households)"
+>          "Prop Dep Var >0")) keep(treatcom) cells(b(fmt(%9.3f) star) se(fmt(%9.3f) par(( ))))
+>         starl(+ 0.1 * 0.05 ** 0.01) legend label collabels(none) title(ITT Ineligibles - AE2) append;
+(output written to C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output/consumo_w7.text)
+
+. estimates clear;
+
+. restore;
+
+. log close;
+      name:  <unnamed>
+       log:  C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct/consumption_income_long_t
+> erm.log
+  log type:  text
+ closed on:  29 Nov 2019, 15:44:32
+-----------------------------------------------------------------------------------------------------------------------------
