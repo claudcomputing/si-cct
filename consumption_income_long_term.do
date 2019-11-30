@@ -7,8 +7,8 @@ set more off;
 set mem 400m;
 set matsize 800;
 
-sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
-sysdir set PERSONAL 	"c:/Program Files (x86)/Stata8/ado/personal";
+*sysdir set PLUS 		"c:/Program Files (x86)/Stata8/ado/plus";
+*sysdir set PERSONAL 	"c:/Program Files (x86)/Stata8/ado/personal";
 
 *=========================*
 Description: Estimate impact of progresa on consumption and other sources of income in Nov 2003 
