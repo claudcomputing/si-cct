@@ -1,9 +1,12 @@
 *export to excel;
 
-cd "$out_p"
+
 dir
+gl data		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\dta"
+gl code		"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct"
+gl out_p	"C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\output"
 
-
+cd "$out_p"
 /*program 1
 investments_des.do
 Creates: 
@@ -22,15 +25,15 @@ Macro Income and Price Effects (Animal Prices and Community Wages)
 Sample Sizes and Analysis of Attrition*/
 
 use eligibles, clear
-       export excel using si-cct-MainTables, sheet("Table1-Baseline") sheetreplace
+       export excel using si-cct-MainTables, sheet("Table1-Baseline") firstrow(variables) sheetreplace 
 use aprices, clear
-       export excel using si-cct-Appendices, sheet("TableA2-IncomePriceAnimal") sheetreplace
+       export excel using si-cct-MainTables, sheet("TableA2-IncomePriceAnimal") firstrow(variables) sheetreplace 
 use cwages, clear
-       export excel using si-cct-Appendices, sheet("TableA2-IncomePriceWages") sheetreplace
+       export excel using si-cct-MainTables, sheet("TableA2-IncomePriceWages") firstrow(variables) sheetreplace 
 use nonattriters, clear
-       export excel using si-cct-Appendices, sheet("nonattriters") sheetreplace
+       export excel using si-cct-MainTables, sheet("nonattriters") firstrow(variables) sheetreplace 
 use ineligibles, clear
-       export excel using si-cct-Appendices, sheet("ineligibles") sheetreplace
+       export excel using si-cct-MainTables, sheet("ineligibles") firstrow(variables) sheetreplace 
   
 	   
 /* program 2
