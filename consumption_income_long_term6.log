@@ -1,0 +1,907 @@
+-----------------------------------------------------------------------------------------------------------------------------
+      name:  <unnamed>
+       log:  C:\Users\Claud\Box\A3SR Social Impact\si_cct\2010-0343_data_modified4class\code\si-cct/consumption_income_long_t
+> erm6.log
+  log type:  text
+ opened on:   7 Dec 2019, 21:30:05
+
+. use "$data/investments_data.dta";
+(Complete Investments Data Base)
+
+. *==============================
+>  Estimation Sample -- households with information on consumption in Nov 2003
+> *==============================;
+. keep if wave == 6;
+(136,190 observations deleted)
+
+. drop if consumo_pp_ae ==0 | consumo_pp_ae ==.;
+(72 observations deleted)
+
+. *================================================================*
+>  Private & Public Transfers & Out of the Hh Earnings - PP AE & Compare Values/Trimming
+> *=================================================================*;
+. gl public       solidaridad INI probecat empleotemp procampo liconsa DIF tortilla progbecas progpapilla progmonetario
+>                         amount_solidaridad amount_INI amount_probecat amount_empleotemp amount_procampo;
+
+. sum $public;
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+ solidaridad |     21,480      .01527    .1226277          0          1
+         INI |     21,480    .0005587    .0236299          0          1
+    probecat |     21,480    .0000931    .0096491          0          1
+  empleotemp |     21,480    .0039572    .0627829          0          1
+    procampo |     21,480    .2971136    .4569976          0          1
+-------------+---------------------------------------------------------
+     liconsa |     21,480    .0090782    .0948484          0          1
+         DIF |     21,480      .04027    .1965964          0          1
+    tortilla |     21,480    .0011173    .0334084          0          1
+   progbecas |          0
+ progpapilla |          0
+-------------+---------------------------------------------------------
+progmoneta~o |     21,480    .6241155    .4843617          0          1
+amount_sol~d |     21,471       3.446    132.5206          0   18680.23
+  amount_INI |     21,474    .1349274    11.77641          0   1558.379
+amount_pro~t |     21,480    .0405744    5.677619          0   831.1355
+amount_emp~p |     21,471    .7803226    29.21039          0   3116.758
+-------------+---------------------------------------------------------
+amount_pro~o |     21,271    77.32305    712.4231          0   49868.13
+
+. des $public;
+
+              storage   display    value
+variable name   type    format     label      variable label
+-----------------------------------------------------------------------------------------------------------------------------
+solidaridad     byte    %8.0g      p40b1      (hh) =1 if hh receives solidaridad support
+INI             byte    %8.0g      p40c1      (hh) =1 if hh receives INI support (anti-poverty program for indigenous)
+probecat        byte    %8.0g      p40d1      (hh) =1 if hh receives probecat support
+empleotemp      byte    %8.0g      p40e1      (hh) =1 if hh receives empleo temporal support
+procampo        byte    %9.0g                 (hh) =1 if hh receives procampo support (agricultural subsidies)
+liconsa         byte    %8.0g      p41b1      (hh) =1 if hh receives liconsao support
+DIF             byte    %8.0g      p40a1      (hh) =1 if hh receives DIF support (despensas -- package of basic food
+                                                products)
+tortilla        byte    %8.0g      p41a1      (hh) =1 if hh receives tortilla support
+progbecas       byte    %9.0g                 (hh) =1 if hh receives becas progresa
+progpapilla     byte    %9.0g                 (hh) =1 if hh receives papilla progresa
+progmonetario   byte    %9.0g                 (hh) =1 if hh receives nutritional stipend progresa
+amount_solida~d double  %9.0g                 (hh) Monthly amount solidaridad support (deflated)
+amount_INI      double  %9.0g                 (hh) Monthly amount INI support (deflated)
+amount_probecat double  %9.0g                 (hh) Monthly amount probecat support (deflated)
+amount_empleo~p double  %9.0g                 (hh) Monthly amount empleotemp support (deflated)
+amount_procampo double  %9.0g                 (hh) Monthly amount procampo support (deflated)
+
+. **Procampo and progmonetario (progresa) are the most common public subsidies hh receives -- consider amount_procampo;
+. ren amount_procampo     amount_p;
+
+.                         *public transfers;
+. ren amount_t                    amount_t_pr;
+
+.                 *private transfers;
+. ren nonfood nonfoodexp;
+
+. foreach x in foodexp nonfoodexp {;
+  2.         drop `x'_pp `x'_pp_ae;
+  3. };
+
+. foreach x in amount_p amount_t_pr amount_borrowed_m outwage_lw_hh foodexp nonfoodexp {;
+  2.         g `x'_pp_ae = `x'/hhsize_ae;
+  3.         g `x'_pp_ae2 = `x'/hhsize_ae2;
+  4. };
+(438 missing values generated)
+(438 missing values generated)
+(232 missing values generated)
+(232 missing values generated)
+(21,709 missing values generated)
+(21,709 missing values generated)
+(21,709 missing values generated)
+(21,709 missing values generated)
+
+. egen amount_t_pb                        =rsum(amount_p witransfer_act_m);
+
+. replace amount_t_pb                     =. if amount_p ==. & witransfer_act_m ==.;
+(244 real changes made, 244 to missing)
+
+. egen amount_t_pb_pp_ae          =rsum(amount_p_pp_ae witransfer_act_m_pp_ae);
+
+. replace amount_t_pb_pp_ae       =. if amount_p_pp_ae ==. & witransfer_act_m_pp_ae ==.;
+(244 real changes made, 244 to missing)
+
+. egen amount_t_pb_pp_ae2         =rsum(amount_p_pp_ae2 witransfer_act_m_pp_ae2);
+
+. replace amount_t_pb_pp_ae2      =. if amount_p_pp_ae2 ==. & witransfer_act_m_pp_ae2 ==.;
+(244 real changes made, 244 to missing)
+
+.  ** Dummies for Proportions;
+. foreach x in consumo homeprod foodexp nonfoodexp witransfer_act_m amount_p amount_t_pb amount_t_pr amount_borrowed_m outwag
+> e_lw_hh
+> consumo_pp_ae homeprod_pp_ae foodexp_pp_ae nonfoodexp_pp_ae witransfer_act_m_pp_ae amount_p_pp_ae amount_t_pb_pp_ae amount_
+> t_pr_pp_ae 
+> amount_borrowed_m_pp_ae outwage_lw_hh_pp_ae
+> consumo_pp_ae2 homeprod_pp_ae2 foodexp_pp_ae2 nonfoodexp_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_pb_pp_ae2 
+> amount_t_pr_pp_ae2 
+> amount_borrowed_m_pp_ae2 outwage_lw_hh_pp_ae2 {;
+  2.         g d`x' =(`x'>0);
+  3. };
+
+. *============================*
+>  Trim Outliers
+> *============================*;
+. sum amount_p amount_t_pr amount_borrowed_m outwage_lw_hh amount_p_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_p
+> b_pp_ae2 
+> amount_t_pr_pp_ae2 outwage_lw_hh_pp_ae2 amount_borrowed_m_pp_ae2 consumo_pp_ae2 foodexp nonfoodexp foodexp_pp_ae2 nonfoodex
+> p_pp_ae2 
+> if t2_c1_op~=., d;
+
+       (hh) Monthly amount procampo support (deflated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,606
+25%            0              0       Sum of Wgt.      10,606
+
+50%            0                      Mean           72.47095
+                        Largest       Std. Dev.       695.731
+75%     33.64944       16622.71
+90%     103.8919       18181.09       Variance       484041.6
+95%     256.2668       29089.74       Skewness       30.13295
+99%     727.2435       36362.18       Kurtosis       1184.441
+
+        (hh) Total monthly amount received by hh from
+               migrants or friends (deflated)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,692
+25%            0              0       Sum of Wgt.      10,692
+
+50%            0                      Mean           22.24455
+                        Largest       Std. Dev.      198.8632
+75%            0       4188.233
+90%            0       4512.836       Variance       39546.59
+95%            0       7034.766       Skewness       24.58589
+99%     692.6129       10551.97       Kurtosis        976.766
+
+       Monthly Amount Borrowed Deflated (borrowed over
+              last 12 mths -- both active & fu
+-------------------------------------------------------------
+no observations
+
+     (hh) Monthly Wage from work in outside hh activity
+                 during last week (deflated)
+-------------------------------------------------------------
+no observations
+
+                       amount_p_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,606
+25%            0              0       Sum of Wgt.      10,606
+
+50%            0                      Mean           15.36945
+                        Largest       Std. Dev.      168.8275
+75%     5.693488       3102.746
+90%     22.16361       3378.599       Variance       28502.72
+95%     49.59042       3586.898       Skewness       51.79973
+99%     161.6097       13319.48       Kurtosis       3728.495
+
+           Actual Transfer - monthly PPAE (DiMaro)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     10.86828              0
+10%     17.18569              0       Obs              10,694
+25%      25.0524              0       Sum of Wgt.      10,694
+
+50%     35.90885                      Mean           41.24657
+                        Largest       Std. Dev.      23.90382
+75%     53.99844       195.9351
+90%     74.19572       203.8066       Variance       571.3928
+95%     88.66644        209.862       Skewness       1.043102
+99%     110.0507       223.1504       Kurtosis       5.107074
+
+                       amount_p_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,606
+25%            0              0       Sum of Wgt.      10,606
+
+50%            0                      Mean           15.36945
+                        Largest       Std. Dev.      168.8275
+75%     5.693488       3102.746
+90%     22.16361       3378.599       Variance       28502.72
+95%     49.59042       3586.898       Skewness       51.79973
+99%     161.6097       13319.48       Kurtosis       3728.495
+
+                     amount_t_pb_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     13.51249              0
+10%     19.00537              0       Obs              10,694
+25%     27.02498              0       Sum of Wgt.      10,694
+
+50%     42.16065                      Mean           56.48955
+                        Largest       Std. Dev.      169.7977
+75%     63.36055       3155.003
+90%     91.18532       3397.605       Variance       28831.24
+95%     112.8089       3611.943       Skewness       50.36376
+99%     213.2229       13349.67       Kurtosis       3601.723
+
+                     amount_t_pr_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%            0              0
+10%            0              0       Obs              10,692
+25%            0              0       Sum of Wgt.      10,692
+
+50%            0                      Mean           6.252017
+                        Largest       Std. Dev.      51.96569
+75%            0       1307.577
+90%            0       1312.926       Variance       2700.433
+95%            0       1385.226       Skewness       18.29992
+99%     200.1771       2269.241       Kurtosis       527.5456
+
+                    outwage_lw_hh_pp_ae2
+-------------------------------------------------------------
+no observations
+
+                  amount_borrowed_m_pp_ae2
+-------------------------------------------------------------
+no observations
+
+             Consumption - monthly PPAE (DiMaro)
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     39.48255       2.638257
+ 5%     62.05783       4.883929
+10%     74.50802       7.611131       Obs              10,694
+25%     102.6111       7.792691       Sum of Wgt.      10,694
+
+50%     145.1751                      Mean           163.7628
+                        Largest       Std. Dev.      94.86129
+75%      201.146       959.8209
+90%     268.7783       984.6138       Variance       8998.664
+95%     323.8665       1975.461       Skewness       3.948314
+99%     498.9699       2555.386       Kurtosis       59.60784
+
+                      Food expenditures
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     74.60202              0
+ 5%       146.22              0
+10%     182.0289              0       Obs              10,694
+25%     265.5832              0       Sum of Wgt.      10,694
+
+50%     384.9464                      Mean           435.7704
+                        Largest       Std. Dev.      278.7213
+75%     543.1027       4413.456
+90%     731.0998       4926.717       Variance       77685.56
+95%     874.3356       6884.274       Skewness       5.437144
+99%     1295.091       7609.406       Kurtosis       92.87748
+
+                    Non-Food expenditures
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     27.70452              0
+10%     44.33145              0       Obs              10,694
+25%     86.04465              0       Sum of Wgt.      10,694
+
+50%     148.2887                      Mean           194.5016
+                        Largest       Std. Dev.      179.9947
+75%     244.9672         2235.7
+90%     388.7197       2253.048       Variance       32398.08
+95%     504.9571        2478.84       Skewness       3.382599
+99%      900.632       2486.334       Kurtosis       24.56891
+
+                       foodexp_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%     17.80478              0
+ 5%     30.62422              0
+10%     39.04855              0       Obs              10,694
+25%      56.4064              0       Sum of Wgt.      10,694
+
+50%     84.40026                      Mean           98.82982
+                        Largest       Std. Dev.      72.51984
+75%     122.4033       969.8262
+90%     170.5189       1399.243       Variance       5259.127
+95%      210.206        2199.25       Skewness        7.77593
+99%     337.2184       2390.249       Kurtosis       181.4982
+
+                      nonfoodexp_pp_ae2
+-------------------------------------------------------------
+      Percentiles      Smallest
+ 1%            0              0
+ 5%     6.612056              0
+10%     10.48921              0       Obs              10,694
+25%     19.03942              0       Sum of Wgt.      10,694
+
+50%      32.0067                      Mean            42.6402
+                        Largest       Std. Dev.      43.64509
+75%     52.44646       620.1022
+90%     83.05125       708.0889       Variance       1904.894
+95%     112.8771       718.5936       Skewness        8.79387
+99%     201.6471       1743.716       Kurtosis       244.3145
+
+. foreach x in consumo consumo_pp_ae consumo_pp_ae2 
+> homeprod homeprod_pp_ae homeprod_pp_ae2 foodexp foodexp_pp_ae foodexp_pp_ae2 nonfoodexp nonfoodexp_pp_ae nonfoodexp_pp_ae2 
+>  
+> witransfer_act_m witransfer_act_m_pp_ae witransfer_act_m_pp_ae2 amount_p amount_p_pp_ae amount_p_pp_ae2 
+> amount_t_pb amount_t_pb_pp_ae amount_t_pb_pp_ae2 amount_t_pr amount_t_pr_pp_ae amount_t_pr_pp_ae2 
+> amount_borrowed_m amount_borrowed_m_pp_ae /*amount_borrowed_m_pp_ae2 outwage_lw_hh*/ outwage_lw_hh_pp_ae outwage_lw_hh_pp_a
+> e2 {;
+  2.         xtile `x'_tl_t2 = `x' if t2_c1_op ~=., nq(200);
+  3.         xtile `x'_tl_tr = `x' if treatcom ~=. & ineligible ==1, nq(200);
+  4. };
+no observations
+r(2000);
+
+end of do-file
+
+r(2000);
+
+. do "C:\Users\Claud\AppData\Local\Temp\STD3c4c_000000.tmp"
+
+. summarize 
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+       folio |     21,709     2074910    1.10e+07          1   3.06e+08
+       state |     21,709    21.15639    6.603773         12         30
+        muni |     21,709    61.50159    52.91606          1        217
+       local |     21,709    49.26127    51.11462          1        482
+        wave |     21,709           6           0          6          6
+-------------+---------------------------------------------------------
+panel_bala~d |     21,709     .717859     .450052          0          1
+   female_hh |     21,709    .1089871    .3116302          0          1
+      age_hh |     21,709    49.05045     15.5212         14         90
+     educ_hh |     21,709    3.149362    2.852023          0         18
+ethnicity_hh |     21,709    .3218941    .4672134          0          1
+-------------+---------------------------------------------------------
+   female_sp |     21,709    .8173569    .3863826          0          1
+      age_sp |     21,709    42.50247    12.76201         14         90
+     educ_sp |     21,709    3.068132    2.582706          0         18
+     age_hh2 |     21,709     2650.34     1626.15        196       8100
+     age_sp2 |     21,709    2007.451    1198.997        196       8100
+-------------+---------------------------------------------------------
+  up_cwagepm |     21,709    668.5093     235.171          0   1496.044
+  up_cwagepw |     21,709    418.9384    318.3548          0   1496.044
+  up_cwagepc |     21,709    331.1898    294.0323          0   1108.181
+up2_mcwagepm |     21,709     .007923    .0886599          0          1
+ dirtfloor97 |     21,709    .5478834    .4977134          0          1
+-------------+---------------------------------------------------------
+  bathroom97 |     21,709      .54254    .4981985          0          1
+electrici~97 |     21,709    .6766779    .4677553          0          1
+   homeown97 |     21,709    .8690405    .3373638          0          1
+  dage0_7_97 |     21,709    .5415726    .4982802          0          1
+ dage8_17_97 |     21,709    .5715602     .494864          0          1
+-------------+---------------------------------------------------------
+dmage18_5~97 |     21,709    .7141278    .4518392          0          1
+dfage18_5~97 |     21,709    .7653508    .4237891          0          1
+  dage55p_97 |     21,709    .3466304    .4759078          0          1
+org_produc~n |     21,709    .0349164    .1835723          0          1
+  org_credit |     21,709    .0057119    .0753628          0          1
+-------------+---------------------------------------------------------
+org_consum~n |     21,709    .0124372    .1108292          0          1
+org_religion |     21,709    .4196877    .4935192          0          1
+org_politics |     21,709    .1526556    .3596635          0          1
+ org_parents |     21,709     .898291    .3022722          0          1
+     org_com |     21,709    .8741075    .3317358          0          1
+-------------+---------------------------------------------------------
+  org_faenas |     21,709    .8922567    .3100631          0          1
+     primary |     21,709    .9705191    .1691539          0          1
+     telesec |     21,709    .2766594    .4473569          0          1
+healthcenter |     21,709    .7994841    .4003956          0          1
+mobilehealth |     21,709    .7441153    .4363674          0          1
+-------------+---------------------------------------------------------
+    dist_sec |     21,709    2.360637    2.129662          0     14.879
+    min_dist |     21,709    104.8455    42.11412   9.465392   170.4576
+    dist_cap |     21,709    149.5199    75.74489   9.465392   359.7745
+    treatcom |     21,709     .604634    .4889404          0          1
+   densified |     15,921    .3259845    .4687563          0          1
+-------------+---------------------------------------------------------
+   untreated |     21,709    .0639366    .2446456          0          1
+  ineligible |     20,924    .2052189    .4038711          0          1
+ maxbenefcln |     21,709    .3439587    .4750384          0          1
+    hhsize97 |     21,709    5.353468    2.455404          1         24
+lnup_cwagepm |     21,709    6.357994     .860517          0   7.311248
+-------------+---------------------------------------------------------
+lnup_cwagepw |     21,709    4.525662    2.855963          0   7.311248
+lnup_cwagepc |     21,709    3.974056    2.968702          0   7.011377
+    t1_c1_op |     10,358    .6073566    .4883621          0          1
+    t1_c2_op |     10,250    .6137561    .4869114          0          1
+    t2_c1_op |     10,694    .6196933    .4854849          0          1
+-------------+---------------------------------------------------------
+       t2_c1 |     14,095    .5596311     .496449          0          1
+       t1_c1 |     13,674    .5460728     .497891          0          1
+       t1_c2 |     13,489    .5535622    .4971412          0          1
+      sewing |     21,709    .0040997    .0638988          0          1
+        food |     21,709    .0023493    .0484133          0          1
+-------------+---------------------------------------------------------
+       const |     21,709    .0013819    .0371493          0          1
+      crafts |     21,709    .0081994    .0901804          0          1
+      transp |     21,709    .0005528     .023505          0          1
+      repair |     21,709           0           0          0          0
+         dom |     21,709    .0043761    .0660085          0          1
+-------------+---------------------------------------------------------
+       other |     21,709    .0175503     .131313          0          1
+          me |     21,709    .0374038    .1897537          0          1
+         mef |     21,709    .0362062    .1868071          0          1
+enterprise_m |     21,709    .0013819    .0371493          0          1
+ female_ent1 |        808    .5086634    .5002346          0          1
+-------------+---------------------------------------------------------
+    age_ent1 |        816    44.61765    15.15728          3         91
+   educ_ent1 |        781    3.164533    3.113681          0         16
+  benef_ent1 |        743    .2866756    .4525133          0          1
+beneficiar~n |     19,965    .7009767    .4578415          0          1
+witransfer~t |     19,965    774.0838    756.4878          0   4544.481
+-------------+---------------------------------------------------------
+start_prog~n |     19,965    1524.669    850.2696          0    2003.02
+ totalbimths |     19,965    19.38783    12.11384          0         34
+transfer_hh1 |     19,965    981.5267    956.7428          0       4210
+aggtransfe~1 |     19,965    4048.335    4649.103          0      20430
+transfer_hh2 |     19,965    1009.292    989.7797          0       4210
+-------------+---------------------------------------------------------
+aggtransf~h2 |     19,965    4072.102    4658.666          0      20430
+transfer_hh3 |     19,965    954.1047    930.3091          0       4210
+aggtransfe~3 |     19,965    3636.887    4143.121          0      20430
+aggwitrans~t |     19,965    2634.186    2989.446          0    15409.6
+      comuid |     21,709     256.791    150.7488          1        506
+-------------+---------------------------------------------------------
+dummy_fema~h |     21,709    .0140955    .1178876          0          1
+dummy_ethn~h |     21,709    .0835598    .2767329          0          1
+dummy_fema~p |     21,709    .1737068    .3788658          0          1
+dummy_~_7_97 |     21,709    .0812106    .2731645          0          1
+dummy_~17_97 |     21,709    .0812106    .2731645          0          1
+-------------+---------------------------------------------------------
+dummy_dma~97 |     21,709    .0812106    .2731645          0          1
+dummy_dfa~97 |     21,709    .0812106    .2731645          0          1
+dummy_da~55p |     21,709    .0812106    .2731645          0          1
+dummy_roof97 |     21,709    .0811645    .2730939          0          1
+dummy_wal~97 |     21,709    .0818094    .2740804          0          1
+-------------+---------------------------------------------------------
+dummy_hom~97 |     21,709    .0807039    .2723861          0          1
+dummy_dir~97 |     21,709    .0826846    .2754112          0          1
+dummy_bat~97 |     21,709    .0819015    .2742209          0          1
+dummy_ele~97 |     21,709     .080842    .2725987          0          1
+dummy_ayudas |     21,709     .012299    .1102195          0          1
+-------------+---------------------------------------------------------
+dummy_age_hh |     21,709    .0142337    .1184558          0          1
+dummy_educ~h |     21,709    .0413193    .1990322          0          1
+dummy_age_sp |     21,709    .1737068    .3788658          0          1
+dummy_educ~p |     21,709    .1940209    .3954542          0          1
+dummy_hhs~97 |     21,709    .0803353    .2718179          0          1
+-------------+---------------------------------------------------------
+dummy_room~7 |     21,709    .0821318    .2745718          0          1
+panel_bala~2 |     21,709    .6596343    .4738431          0          1
+ csprice1_av |          0
+ csprice2_av |          0
+ csprice3_av |          0
+-------------+---------------------------------------------------------
+ csprice4_av |          0
+ csprice5_av |          0
+ csprice6_av |          0
+ csprice7_av |          0
+ csprice8_av |          0
+-------------+---------------------------------------------------------
+ csratio1_av |          0
+ csratio2_av |          0
+ csratio3_av |          0
+ csratio4_av |          0
+ csratio5_av |          0
+-------------+---------------------------------------------------------
+ csratio6_av |          0
+ csratio7_av |          0
+ csratio8_av |          0
+  landpieces |          0
+        land |          0
+-------------+---------------------------------------------------------
+          ha |          0
+hairrigation |          0
+haseasonal~y |          0
+         ani |          0
+        ani1 |          0
+-------------+---------------------------------------------------------
+        ani2 |          0
+      horses |          0
+       mules |          0
+       oxens |          0
+       goats |          0
+-------------+---------------------------------------------------------
+        cows |          0
+    chickens |          0
+        pigs |          0
+     rabbits |          0
+    d_horses |          0
+-------------+---------------------------------------------------------
+     d_mules |          0
+     d_oxens |          0
+     d_goats |          0
+      d_cows |          0
+  d_chickens |          0
+-------------+---------------------------------------------------------
+      d_pigs |          0
+   d_rabbits |          0
+         no4 |          0
+      small4 |          0
+        big4 |          0
+-------------+---------------------------------------------------------
+landlessma~4 |          0
+  landsmall4 |          0
+       nbani |          0
+      nbani1 |          0
+      nbani2 |          0
+-------------+---------------------------------------------------------
+   mnbani_av |          0
+  mnbani1_av |          0
+  mnbani2_av |          0
+        vani |          0
+       vani1 |          0
+-------------+---------------------------------------------------------
+       vani2 |          0
+   ani_sales |          0
+ ani_sales_a |          0
+    ani_prod |          0
+ani_prod_s~a |          0
+-------------+---------------------------------------------------------
+        maiz |          0
+      frijol |          0
+ otrocultivo |          0
+      maiz_t |          0
+    frijol_t |          0
+-------------+---------------------------------------------------------
+ maiz_sold_t |          0
+frijol_sol~t |          0
+  crop_sales |          0
+      ag_exp |          0
+  out_maiz_t |          0
+-------------+---------------------------------------------------------
+out_frijol_t |          0
+out_maiz_s~t |          0
+out_frij~d_t |          0
+landpieces97 |     19,928    .9446006    1.074643          0         20
+      land97 |     19,965     .629702    .4828965          0          1
+-------------+---------------------------------------------------------
+   landown97 |     19,928    .6410578    .4797022          0          1
+        ha97 |     19,855    2.087283    3.161638          0         24
+hairrigat~97 |     19,953    .0962762    .6314742          0         15
+haseasona~97 |     19,855    1.948577    3.037512          0         22
+       ani97 |     19,965    .8615577    .3453722          0          1
+-------------+---------------------------------------------------------
+      ani197 |     19,965    .3876283    .4872212          0          1
+      ani297 |     19,960    .8344689    .3716685          0          1
+       no497 |     19,850    .0900756    .2862972          0          1
+    small497 |     19,850    .6408564    .4797615          0          1
+      big497 |     19,850     .269068    .4434866          0          1
+-------------+---------------------------------------------------------
+landless~497 |     19,850    .2907809    .4541341          0          1
+landsmall497 |     19,850    .3500756    .4770054          0          1
+   deffarm97 |     19,850    6.158136    3.738213          1         12
+     nbani97 |     19,965    1.911159    3.587364          0    55.6256
+    nbani197 |     19,965    .4167768    1.147579          0         55
+-------------+---------------------------------------------------------
+    nbani297 |     19,960    1.494757    3.109259          0   37.00958
+ mnbani_av97 |     19,965    1.972659    3.657165          0   47.57449
+mnbani1_av97 |     19,965    .4454072    1.189421          0   47.14286
+mnbani2_av97 |     19,960    1.527635    3.143386          0     38.465
+      vani97 |     19,965    3407.923    6443.186          0   75701.97
+-------------+---------------------------------------------------------
+     vani197 |     19,965    724.6305    1907.741          0   74857.41
+     vani297 |     19,960    2683.965    5650.144          0   75397.09
+      lender |          0
+  credit_use |          0
+      credit |          0
+-------------+---------------------------------------------------------
+ formal_loan |          0
+loclender_~n |          0
+informal_l~n |          0
+ credit_farm |          0
+ credit_cons |          0
+-------------+---------------------------------------------------------
+credit_emerg |          0
+amount_bor~d |          0
+amount_bor~m |          0
+         nbp |     19,965    15.59689    13.07898          0         32
+  foodexpnom |     21,709    141.3075    92.03213          0       2550
+-------------+---------------------------------------------------------
+     foodexp |     21,709    421.6729    274.6313          0   7609.406
+foodexp_ch~k |     21,709    506.2565     341.725          0   11936.32
+ foodexpnom1 |     21,709    139.1105    80.71479          0       1280
+    foodexp1 |     21,709     415.117    240.8594          0   3819.623
+ foodexpnom2 |     21,709    180.6776    107.5514          0   2341.321
+-------------+---------------------------------------------------------
+    foodexp2 |     21,709    539.1565     320.942          0   6986.692
+ foodexpnom3 |     21,709    182.7903    119.1807          0   3059.386
+    foodexp3 |     21,709    545.4612    355.6447          0   9129.454
+ foodexpnom0 |     21,709    173.7915    102.8237          0       2946
+    foodexp0 |     21,709    518.6079    306.8341          0   8791.102
+-------------+---------------------------------------------------------
+    homeprod |     21,709    103.4909    184.8265          0   8498.662
+  nonfoodexp |     21,709    208.0846    214.1707          0   3996.465
+     consumo |     21,709    726.6925    430.8092   6.926129   8943.074
+    consumo1 |     21,709    623.2016    381.2173          0   5333.466
+    consumo2 |     21,709    747.2411    440.9269   6.926129   8025.316
+-------------+---------------------------------------------------------
+    consumo3 |     21,709    753.5458    468.7435   6.926129   9445.616
+  consumo_pp |     21,709    173.7235    127.8826   2.254695   3292.745
+ consumo1_pp |     21,709    150.1777    114.3329          0   2568.192
+ consumo2_pp |     21,709    177.6926    131.9302   2.254695   4160.507
+ consumo3_pp |     21,709    179.8264    138.4265   2.254695   3288.269
+-------------+---------------------------------------------------------
+consumo2_p~e |     21,709    207.4279    149.1901   2.931103   4620.996
+consumo3_p~e |     21,709    209.8302    156.8475   2.931103   4588.171
+consumo_ou~r |     21,709    .0164448    .1271814          0          1
+witransfe~_2 |     21,709     330.946    400.3877          0   2046.671
+witransfer~3 |     21,709    328.6107    401.5796          0   2046.671
+-------------+---------------------------------------------------------
+witransf~2_m |     21,709     165.473    200.1938          0   1023.336
+witransf~3_m |     21,709    164.3053    200.7898          0   1023.336
+witransf~t_m |     19,965     129.014    126.0813          0   757.4136
+transfer_h~m |     19,965    159.0174    155.0515          0   701.6667
+aggwitrans~6 |     19,965    1860.102    2372.855          0   12955.89
+-------------+---------------------------------------------------------
+aggtransfe~6 |     19,965    2682.782    3384.483          0      16220
+      hhsize |     21,709    4.952831    2.391536          1         21
+   hhsize_ae |     21,709    4.069418     1.84897         .5       15.5
+  hhsize_ae2 |     21,709    4.297202    1.936324        .73      17.76
+   hhsize_97 |     19,946     5.23323    2.515662          1         23
+-------------+---------------------------------------------------------
+hhsize_ae_97 |     19,946    4.250175    1.927921          1         18
+hhsize_ae2~7 |     19,946    4.519975    2.034652        .73      19.49
+consumo_pp~e |     21,709    202.7085    144.9767   2.931103   4220.631
+consumo_p~e2 |     21,709     192.854    135.1757   2.638257   3292.745
+consumo1_p~e |     21,709    175.2373    130.4822          0   4220.631
+-------------+---------------------------------------------------------
+consumo1_p~2 |     21,709    166.6437    121.0839          0   2890.843
+homeprod_p~e |     21,709    27.47113    56.53242          0   2984.081
+homeprod_~e2 |     21,709    26.21024    54.29076          0   2984.081
+witransfer~e |     19,965    31.67619    28.52836          0   223.1504
+witransfe~e2 |     19,965     30.2346    28.05571          0   223.1504
+-------------+---------------------------------------------------------
+aggwitrans~e |     19,965    447.6264     532.858          0   5409.365
+aggwitrans~2 |     19,965    428.5215    526.2851          0   7011.688
+transfer_h~e |     19,965    38.17233    33.92665          0   431.6667
+transfer_~e2 |     19,965    36.32305    33.11833          0        500
+aggtransfe~e |     19,965     627.737    738.8272          0      12220
+-------------+---------------------------------------------------------
+aggtransf~e2 |     19,965    601.2856    730.1438          0      12220
+     trans_f |     21,458    .0501911    .2183441          0          1
+    amount_f |     21,458    19.01622    164.7166          0     7819.6
+    migrants |     21,437    .1396651    .3466473          0          1
+     trans_m |     21,390    .0387564    .1930184          0          1
+-------------+---------------------------------------------------------
+    amount_m |     21,478     14.0335    144.4258          0   10551.97
+      type_f |        151           2           0          2          2
+    type_out |         26           2           0          2          2
+   trans_out |     21,446    .0026578    .0514869          0          1
+  amount_out |     21,458     .234981    9.279461          0   692.6129
+-------------+---------------------------------------------------------
+     trans_t |     21,477    .0785026    .2689671          0          1
+ amount_t_pr |     21,477    33.03355    237.8169          0   10551.97
+ solidaridad |     21,480      .01527    .1226277          0          1
+         INI |     21,480    .0005587    .0236299          0          1
+    probecat |     21,480    .0000931    .0096491          0          1
+-------------+---------------------------------------------------------
+  empleotemp |     21,480    .0039572    .0627829          0          1
+    procampo |     21,480    .2971136    .4569976          0          1
+     liconsa |     21,480    .0090782    .0948484          0          1
+         DIF |     21,480      .04027    .1965964          0          1
+    tortilla |     21,480    .0011173    .0334084          0          1
+-------------+---------------------------------------------------------
+   progbecas |          0
+ progpapilla |          0
+progmoneta~o |     21,480    .6241155    .4843617          0          1
+amount_sol~d |     21,471       3.446    132.5206          0   18680.23
+  amount_INI |     21,474    .1349274    11.77641          0   1558.379
+-------------+---------------------------------------------------------
+amount_pro~t |     21,480    .0405744    5.677619          0   831.1355
+amount_emp~p |     21,471    .7803226    29.21039          0   3116.758
+    amount_p |     21,271    77.32305    712.4231          0   49868.13
+solidarid~97 |     19,943     .126661    .3326012          0          1
+       INI97 |     19,933    .0045653    .0674142          0          1
+-------------+---------------------------------------------------------
+  probecat97 |     19,934    .0036621    .0604058          0          1
+empleotemp97 |     19,933    .0038629     .062034          0          1
+  tortilla97 |     19,936    .0008026     .028319          0          1
+  procampo97 |     19,963    .3671793     .482048          0          1
+outwage_lw~h |          0
+-------------+---------------------------------------------------------
+    educ1_hh |     21,709    .7607444    .4266389          0          1
+    educ1_sp |     21,709    .7869087    .4095011          0          1
+       dist1 |     21,709    .7594085    .4274525          0          1
+dage18_54_97 |     21,709    .8265236    .3786674          0          1
+   cum02_act |     19,965    258.0279    252.1626          0   1514.827
+-------------+---------------------------------------------------------
+  cum314_act |     19,965     1342.88    1395.348          0   8312.488
+ cum1526_act |     19,965    780.0671    1228.902          0   7236.466
+  cum27p_act |     19,965           0           0          0          0
+  cum15p_act |     19,965           0           0          0          0
+   cum02_pot |     19,965    318.0349     310.103          0   1403.333
+-------------+---------------------------------------------------------
+  cum314_pot |     19,965    1846.205    1870.951          0   7623.333
+ cum1526_pot |     19,965    1072.208    1613.547          0   7570.833
+  cum27p_pot |     19,965           0           0          0          0
+  cum15p_pot |     19,965           0           0          0          0
+         me2 |     21,709    .0336727    .1803894          0          1
+-------------+---------------------------------------------------------
+        mef2 |     21,709    .0145562    .1197704          0          1
+amount_p_p~e |     21,271    22.42925    268.9579          0   24934.06
+amount_p_~e2 |     21,271    21.86866    265.0189          0   24934.06
+amou~r_pp_ae |     21,477    11.59341    80.88363          0    3126.51
+amo~r_pp_ae2 |     21,477    11.29844    77.57872          0   2710.847
+-------------+---------------------------------------------------------
+amount_bor~e |          0
+amount_bor~2 |          0
+outwage_lw~e |          0
+outwage_lw~2 |          0
+foodexp_pp~e |     21,709    119.5387    91.97701          0   2536.469
+-------------+---------------------------------------------------------
+foodexp_p~e2 |     21,709    113.5581    85.73839          0   2390.249
+nonfoodexp~e |     21,709    57.37322    69.67945          0   2656.973
+nonfoodex~e2 |     21,709    54.68051    65.98846          0   1998.232
+ amount_t_pb |     21,465    196.6225    719.8762          0   49868.13
+amou~b_pp_ae |     21,465    51.68916     268.912          0   24934.06
+-------------+---------------------------------------------------------
+amo~b_pp_ae2 |     21,465    49.79278    265.0059          0   24934.06
+    dconsumo |     21,709           1           0          1          1
+   dhomeprod |     21,709    .6685246    .4707544          0          1
+    dfoodexp |     21,709    .9959003    .0638988          0          1
+ dnonfoodexp |     21,709    .9860427    .1173165          0          1
+-------------+---------------------------------------------------------
+dwitransfe~m |     21,709    .7191487    .4494253          0          1
+   damount_p |     21,709    .3045281    .4602179          0          1
+damount_t_pb |     21,709    .7507485    .4325896          0          1
+damount_t_pr |     21,709    .0737482    .2613667          0          1
+damount_bo~m |     21,709           1           0          1          1
+-------------+---------------------------------------------------------
+doutwage_l~h |     21,709           1           0          1          1
+dconsumo_p~e |     21,709           1           0          1          1
+dhomeprod_~e |     21,709    .6685246    .4707544          0          1
+dfoodexp_p~e |     21,709    .9959003    .0638988          0          1
+dnonfoodex~e |     21,709    .9860427    .1173165          0          1
+-------------+---------------------------------------------------------
+dwitransfe~e |     21,709    .7191487    .4494253          0          1
+damount_p_~e |     21,709    .3045281    .4602179          0          1
+damo~b_pp_ae |     21,709    .7507485    .4325896          0          1
+damo~r_pp_ae |     21,709    .0737482    .2613667          0          1
+damount_bo~e |     21,709           1           0          1          1
+-------------+---------------------------------------------------------
+doutwage_l~e |     21,709           1           0          1          1
+dconsumo_p~2 |     21,709           1           0          1          1
+dhomeprod_~2 |     21,709    .6685246    .4707544          0          1
+dfoodexp_p~2 |     21,709    .9959003    .0638988          0          1
+dnonfoodex~2 |     21,709    .9860427    .1173165          0          1
+-------------+---------------------------------------------------------
+dwitransfe~2 |     21,709    .7191487    .4494253          0          1
+damount_p_~2 |     21,709    .3045281    .4602179          0          1
+dam~b_pp_ae2 |     21,709    .7507485    .4325896          0          1
+dam~r_pp_ae2 |     21,709    .0737482    .2613667          0          1
+damount_bo~2 |     21,709           1           0          1          1
+-------------+---------------------------------------------------------
+doutwage_l~2 |     21,709           1           0          1          1
+consumo_tl~2 |     10,694    100.4905    57.73712          1        200
+consumo_tl~r |      4,294    100.4769    57.74044          1        200
+cons~e_tl_t2 |     10,694    100.4907    57.73677          1        200
+cons~e_tl_tr |      4,294    100.4769    57.74044          1        200
+-------------+---------------------------------------------------------
+cons~2_tl_t2 |     10,694    100.4907    57.73677          1        200
+cons~2_tl_tr |      4,294    100.4769    57.74044          1        200
+homeprod_t~2 |     10,694    91.06078    68.57138          1        200
+homeprod_t~r |      4,294    88.28365    70.74371          1        200
+home~e_tl_t2 |     10,694    91.21423    68.60063          1        200
+-------------+---------------------------------------------------------
+home~e_tl_tr |      4,294     88.4476    70.78756          1        200
+home~2_tl_t2 |     10,694    91.25566    68.61501          1        200
+home~2_tl_tr |      4,294    88.50582    70.82068          1        200
+foodexp_tl~2 |     10,694    100.0612    57.82901          1        200
+foodexp_tl~r |      4,294    100.1034    57.83972          1        200
+-------------+---------------------------------------------------------
+food~e_tl_t2 |     10,694    100.3949    57.75977          1        200
+food~e_tl_tr |      4,294    100.3407    57.75182          1        200
+food~2_tl_t2 |     10,694    100.4573    57.74033          1        200
+food~2_tl_tr |      4,294    100.4136    57.73631          1        200
+nonf~p_tl_t2 |     10,694    100.4573    57.78551          1        200
+-------------+---------------------------------------------------------
+nonf~p_tl_tr |      4,294    100.4329    57.80028          1        200
+nonf~e_tl_t2 |     10,694     100.475    57.76104          1        200
+nonf~e_tl_tr |      4,294    100.4439    57.78385          1        200
+nonf~2_tl_t2 |     10,694    100.4772     57.7588          1        200
+nonf~2_tl_tr |      4,294    100.4592    57.76405          1        200
+-------------+---------------------------------------------------------
+witr~m_tl_t2 |     10,694     95.3775     62.7978          1        200
+witr~m_tl_tr |      4,044    1.049209    3.129302          1        200
+witr~e_tl_t2 |     10,694    99.66925    58.30827          1        200
+witr~e_tl_tr |      4,044    1.049209    3.129302          1        200
+witr~2_tl_t2 |     10,694    99.89686     58.1422          1        200
+-------------+---------------------------------------------------------
+witr~2_tl_tr |      4,044    1.049209    3.129302          1        200
+amount_p_t~2 |     10,606    49.87884    77.54954          1        200
+amount_p_t~r |      4,187    54.62503    78.59401          1        200
+amount_p_p.. |     10,606    49.99293    77.71747          1        200
+amount_p_p.. |      4,187    54.76164    78.78295          1        200
+-------------+---------------------------------------------------------
+amount_p_p.. |     10,606    50.02319    77.76255          1        200
+amount_p_p.. |      4,187    54.79174    78.82292          1        200
+amou~b_tl_t2 |     10,694    97.48962    61.16396          1        200
+amou~b_tl_tr |      4,241    54.06697    78.48844          1        200
+amount_t_p.. |     10,694    100.0084     58.1362          1        200
+-------------+---------------------------------------------------------
+amount_t_p.. |      4,241    54.20278    78.67454          1        200
+amount_t_p.. |     10,694    100.1521    58.00968          1        200
+amount_t_p.. |      4,241    54.24075    78.72765          1        200
+amou~r_tl_t2 |     10,692    10.01684    40.93094          1        200
+amou~r_tl_tr |      4,245      17.396    53.48398          1        200
+-------------+---------------------------------------------------------
+amount_t_p.. |     10,692     10.0203    40.94657          1        200
+amount_t_p.. |      4,245    17.40448    53.51112          1        200
+amount_t_p.. |     10,692    10.02048    40.94743          1        200
+amount_t_p.. |      4,245    17.40707    53.51957          1        200
+
+. consumo consumo_pp_ae consumo_pp_ae2 
+command consumo is unrecognized
+r(199);
+
+end of do-file
+
+r(199);
+
+. do "C:\Users\Claud\AppData\Local\Temp\STD3c4c_000000.tmp"
+
+. 
+. #delimit;
+delimiter now ;
+. *New Claudia code: 
+> identifying that these vars don't appear in wave 6
+> amount_borrowed_m outwage_lw_hh
+> amount_borrowed_m_pp_ae outwage_lw_hh_pp_ae
+> ;
+. summarize 
+> consumo consumo_pp_ae consumo_pp_ae2 
+> homeprod homeprod_pp_ae homeprod_pp_ae2 foodexp foodexp_pp_ae foodexp_pp_ae2 nonfoodexp nonfoodexp_pp_ae nonfoodexp_pp_ae2 
+>  
+> witransfer_act_m witransfer_act_m_pp_ae witransfer_act_m_pp_ae2 amount_p amount_p_pp_ae amount_p_pp_ae2 
+> amount_t_pb amount_t_pb_pp_ae amount_t_pb_pp_ae2 amount_t_pr amount_t_pr_pp_ae amount_t_pr_pp_ae2 
+> ;
+
+    Variable |        Obs        Mean    Std. Dev.       Min        Max
+-------------+---------------------------------------------------------
+     consumo |     21,709    726.6925    430.8092   6.926129   8943.074
+consumo_pp~e |     21,709    202.7085    144.9767   2.931103   4220.631
+consumo_p~e2 |     21,709     192.854    135.1757   2.638257   3292.745
+    homeprod |     21,709    103.4909    184.8265          0   8498.662
+homeprod_p~e |     21,709    27.47113    56.53242          0   2984.081
+-------------+---------------------------------------------------------
+homeprod_~e2 |     21,709    26.21024    54.29076          0   2984.081
+     foodexp |     21,709    421.6729    274.6313          0   7609.406
+foodexp_pp~e |     21,709    119.5387    91.97701          0   2536.469
+foodexp_p~e2 |     21,709    113.5581    85.73839          0   2390.249
+  nonfoodexp |     21,709    208.0846    214.1707          0   3996.465
+-------------+---------------------------------------------------------
+nonfoodexp~e |     21,709    57.37322    69.67945          0   2656.973
+nonfoodex~e2 |     21,709    54.68051    65.98846          0   1998.232
+witransf~t_m |     19,965     129.014    126.0813          0   757.4136
+witransfer~e |     19,965    31.67619    28.52836          0   223.1504
+witransfe~e2 |     19,965     30.2346    28.05571          0   223.1504
+-------------+---------------------------------------------------------
+    amount_p |     21,271    77.32305    712.4231          0   49868.13
+amount_p_p~e |     21,271    22.42925    268.9579          0   24934.06
+amount_p_~e2 |     21,271    21.86866    265.0189          0   24934.06
+ amount_t_pb |     21,465    196.6225    719.8762          0   49868.13
+amou~b_pp_ae |     21,465    51.68916     268.912          0   24934.06
+-------------+---------------------------------------------------------
+amo~b_pp_ae2 |     21,465    49.79278    265.0059          0   24934.06
+ amount_t_pr |     21,477    33.03355    237.8169          0   10551.97
+amou~r_pp_ae |     21,477    11.59341    80.88363          0    3126.51
+amo~r_pp_ae2 |     21,477    11.29844    77.57872          0   2710.847
+
+. 
+end of do-file
+
