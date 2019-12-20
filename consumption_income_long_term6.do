@@ -313,16 +313,18 @@ estout consumo_pp_ae2 homeprod_pp_ae2 amount_p_pp_ae2 amount_t_pr_pp_ae2 amount_
 estimates clear;
 restore;
 
+#delimit;
 *New Claudia code: 
 identifying that these vars don't appear in wave 6
 amount_borrowed_m outwage_lw_hh
 amount_borrowed_m_pp_ae outwage_lw_hh_pp_ae
 ;
 summarize 
-consumo homeprod foodexp nonfoodexp witransfer_act_m amount_p amount_t_pb amount_t_pr 
-amount_borrowed_m outwage_lw_hh consumo_pp_ae homeprod_pp_ae foodexp_pp_ae nonfoodexp_pp_ae 
-witransfer_act_m_pp_ae amount_p_pp_ae amount_t_pb_pp_ae amount_t_pr_pp_ae 
-amount_borrowed_m_pp_ae outwage_lw_hh_pp_ae consumo_pp_ae2 homeprod_pp_ae2 
-foodexp_pp_ae2 nonfoodexp_pp_ae2 witransfer_act_m_pp_ae2 amount_p_pp_ae2 amount_t_pb_pp_ae2 amount_t_pr_pp_ae2
-;log close;
+consumo consumo_pp_ae consumo_pp_ae2 
+homeprod homeprod_pp_ae homeprod_pp_ae2 foodexp foodexp_pp_ae foodexp_pp_ae2 nonfoodexp nonfoodexp_pp_ae nonfoodexp_pp_ae2  
+witransfer_act_m witransfer_act_m_pp_ae witransfer_act_m_pp_ae2 amount_p amount_p_pp_ae amount_p_pp_ae2 
+amount_t_pb amount_t_pb_pp_ae amount_t_pb_pp_ae2 amount_t_pr amount_t_pr_pp_ae amount_t_pr_pp_ae2 
+;
+
+log close;
 
